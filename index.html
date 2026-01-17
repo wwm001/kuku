@@ -460,21 +460,94 @@
       return audioCtx;
     }
     function ping(){
+      // legacy: short positive blip (kept for compatibility)
+      playCorrect();
+    }
+
+    function playTone(freq, duration, {volume=0.12, type="sine", attack=0.008, release=0.03} = {}){
       if (!(window.AudioContext || window.webkitAudioContext)) return;
       try{
         const ctx = ensureAudioCtx();
         const now = ctx.currentTime;
+
         const g = ctx.createGain();
-        g.gain.value = 0.0001;
+        g.gain.setValueAtTime(0.0001, now);
+        g.gain.linearRampToValueAtTime(volume, now + attack);
+        g.gain.setTargetAtTime(0.0001, now + duration, release);
         g.connect(ctx.destination);
+
+        const o = ctx.createOscillator();
+        o.type = type;
+        o.frequency.setValueAtTime(freq, now);
+        o.connect(g);
+        o.start(now);
+        o.stop(now + duration + 0.08);
+      }catch{}
+    }
+
+    // 1秒ごとのカウントダウン用（小さめ）
+    function playTick(){
+      // smaller than correct/wrong
+      playTone(1100, 0.05, {volume:0.04, type:"square", attack:0.002, release:0.02});
+    }
+
+    // 正解：ピンポンピンポーン（明るい2音＋伸び）
+    function playCorrect(){
+      if (!(window.AudioContext || window.webkitAudioContext)) return;
+      try{
+        const ctx = ensureAudioCtx();
+        const now = ctx.currentTime;
+
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0.0001, now);
+        g.gain.linearRampToValueAtTime(0.14, now + 0.01);
+        g.gain.setTargetAtTime(0.0001, now + 0.55, 0.06);
+        g.connect(ctx.destination);
+
         const o = ctx.createOscillator();
         o.type = "sine";
-        o.frequency.setValueAtTime(880, now);
         o.connect(g);
-        g.gain.setTargetAtTime(0.12, now, 0.015);
-        g.gain.setTargetAtTime(0.0001, now + 0.12, 0.02);
+
+        // ピン（短）
+        o.frequency.setValueAtTime(880, now);
+        o.frequency.setValueAtTime(988, now + 0.12);
+
+        // ポン（少し下）
+        o.frequency.setValueAtTime(784, now + 0.24);
+
+        // ポーン（上に伸び）
+        o.frequency.setValueAtTime(1046, now + 0.34);
+
         o.start(now);
-        o.stop(now + 0.18);
+        o.stop(now + 0.70);
+      }catch{}
+    }
+
+    // 不正解：ブッブー（低めのブザー）
+    function playWrong(){
+      if (!(window.AudioContext || window.webkitAudioContext)) return;
+      try{
+        const ctx = ensureAudioCtx();
+        const now = ctx.currentTime;
+
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0.0001, now);
+        g.gain.linearRampToValueAtTime(0.12, now + 0.01);
+        g.gain.setTargetAtTime(0.0001, now + 0.42, 0.08);
+        g.connect(ctx.destination);
+
+        const o = ctx.createOscillator();
+        o.type = "sawtooth";
+        o.frequency.setValueAtTime(180, now);
+        // ブッ（揺らす）
+        o.frequency.linearRampToValueAtTime(140, now + 0.12);
+        // ブー（少し上げて持続）
+        o.frequency.setValueAtTime(160, now + 0.20);
+        o.frequency.linearRampToValueAtTime(150, now + 0.42);
+
+        o.connect(g);
+        o.start(now);
+        o.stop(now + 0.55);
       }catch{}
     }
 
@@ -623,6 +696,8 @@
 
         const secLeft = Math.max(0, Math.ceil(left / 1000));
         if (secLeft !== lastShownSec){
+          // 1秒減少したタイミングでビープ（小さめ）
+          if (secLeft < lastShownSec) playTick();
           lastShownSec = secLeft;
           setTimeLeftSec(secLeft);
           setSegsOn(secLeft);
@@ -695,10 +770,12 @@ ping();
         updatePills();
         setMascot(rand(FACES), "<b>ぴんぽん！</b> いいね！", "つぎ いこう！");
         flash($("quizCard"), true);
+        playCorrect();
 lockAndAdvance(520);
       } else {
         setMascot("😵‍💫", "<b>ぶー！</b> つぎで とりかえそう！", "いまの せいかいを きいてね");
         flash($("quizCard"), false);
+        playWrong();
 lockAndAdvance(700);
       }
     }
@@ -806,9 +883,9 @@ lockAndAdvance(700);
     resetBtn.addEventListener("click", resetUI);
 
     soundBtn.addEventListener("click", ()=>{
-      ping();
-      const ok = speak("おと テスト。ぴんぽん。", {rate:1.08, pitch:1.18});
-      if (!ok) ping();
+      ensureAudioCtx();
+      playTick();
+      setTimeout(()=>playCorrect(), 120);
       setMascot(rand(FACES), "<b>おと テスト！</b>", "きこえた？");
     });
 

@@ -3,20 +3,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <meta name="theme-color" content="#0b1220" />
+  <meta name="theme-color" content="#07121f" />
   <title>クック先生の九九トレーニングゲーム</title>
   <style>
     :root{
       --bg:#07121f;
-      --card: rgba(255,255,255,.10);
       --card2: rgba(255,255,255,.06);
       --line: rgba(255,255,255,.14);
       --text:#f2f6ff;
-      --muted:#c6d0f6;
-      --accent:#22c55e;
-      --accent2:#60a5fa;
-      --accent3:#f59e0b;
-      --danger:#ef4444;
       --shadow: 0 14px 36px rgba(0,0,0,.40);
       --r: 22px;
     }
@@ -42,7 +36,6 @@
       flex-direction:column;
       gap: 10px;
     }
-
     header{
       display:flex;
       justify-content:space-between;
@@ -50,19 +43,14 @@
       gap:10px;
       user-select:none;
     }
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      min-width: 0;
-    }
+    .brand{ display:flex; align-items:center; gap:10px; min-width:0; }
     .logo{
       width:42px;height:42px;border-radius:16px;
       background: linear-gradient(135deg, rgba(96,165,250,.95), rgba(34,197,94,.85));
       box-shadow: var(--shadow);
-      flex: 0 0 auto;
       position:relative;
       overflow:hidden;
+      flex: 0 0 auto;
     }
     .logo::after{
       content:"";
@@ -109,20 +97,12 @@
     }
     .btn:active{ transform: translateY(1px); }
     .btn.ghost{ background: rgba(255,255,255,.06); }
-    .btn.big{
-      border-radius: 18px;
-      padding: 12px 14px;
-      font-size: 16px;
-    }
+    .btn.big{ border-radius: 18px; padding: 12px 14px; font-size: 16px; }
     .btn.primary{
-      background: linear-gradient(135deg, rgba(34,197,94,.40), rgba(96,165,250,.24));
-      border-color: rgba(34,197,94,.45);
+      background: linear-gradient(135deg, rgba(34,197,94,.42), rgba(96,165,250,.24));
+      border-color: rgba(34,197,94,.50);
     }
-    .btn.disabled, .btn:disabled{
-      opacity:.45;
-      cursor: not-allowed;
-      filter: grayscale(0.3);
-    }
+    .btn.disabled, .btn:disabled{ opacity:.45; cursor:not-allowed; filter: grayscale(0.3); }
     .icon{
       width: 22px; height: 22px;
       display:inline-flex; align-items:center; justify-content:center;
@@ -139,61 +119,22 @@
       border-radius: var(--r);
       box-shadow: var(--shadow);
       padding: 14px;
-    }
-
-    .main{
-      flex: 1;
       min-height: 0;
-      display:flex;
-      flex-direction:column;
-      gap: 10px;
     }
-
-    /* mascot */
-    .mascotCard{
-      padding: 12px 14px;
-      background: rgba(255,255,255,.09);
-    }
-    .mascot{
-      display:flex;
-      gap: 12px;
-      align-items:center;
-    }
-    .face{
-      width:64px;height:64px;border-radius:22px;
-      background:
-        radial-gradient(circle at 30% 25%, rgba(255,255,255,.22), transparent 40%),
-        linear-gradient(135deg, rgba(245,158,11,.70), rgba(96,165,250,.55));
-      display:flex;align-items:center;justify-content:center;
-      font-size: 36px;
-      box-shadow: 0 12px 26px rgba(0,0,0,.28);
-      flex: 0 0 auto;
-    }
-    .bubble{
-      flex: 1;
-      background: rgba(2, 6, 23, .55);
-      border: 1px solid rgba(255,255,255,.14);
-      border-radius: 18px;
-      padding: 10px 12px;
-      min-height: 56px;
-      line-height: 1.35;
-    }
-    .bubble b{ color: #a7f3d0; }
-
-    /* screens */
+    .main{ flex: 1; min-height:0; display:flex; }
     .screen{
-      flex: 1;
-      min-height: 0;
+      width: 100%;
+      height: 100%;
       display:flex;
       flex-direction:column;
       justify-content:center;
       align-items:center;
       text-align:center;
       gap: 10px;
+      min-height: 0;
     }
     .hidden{ display:none !important; }
 
-    /* start screen */
     .panel{
       width: min(760px, 100%);
       text-align:left;
@@ -208,200 +149,109 @@
       letter-spacing: .2px;
       display:flex;
       align-items:center;
-      gap:10px;
-    }
-    .panel h2 .tag{
-      font-size: 12px;
-      font-weight: 1000;
-      padding: 6px 10px;
-      border-radius: 999px;
-      background: rgba(34,197,94,.16);
-      border: 1px solid rgba(34,197,94,.25);
-      color: rgba(255,255,255,.88);
-    }
-    .courseRow{
-      display:flex;
-      flex-direction:column;
-      gap: 10px;
-      padding: 12px;
-      border-radius: 18px;
-      border: 1px solid rgba(255,255,255,.14);
-      background: rgba(255,255,255,.07);
-    }
-    .courseRow.locked{
-      opacity:.55;
-      filter: grayscale(0.25);
-    }
-    .courseTitle{
-      display:flex;
-      align-items:center;
       justify-content:space-between;
       gap:10px;
-      font-weight: 1000;
     }
-    .courseTitle small{
-      font-weight: 900;
-      color: rgba(255,255,255,.75);
-    }
-    .choicesGrid{
+    .subtitle{ font-size: 12px; font-weight: 900; color: rgba(255,255,255,.70); }
+
+    .courseGrid{
       display:grid;
-      grid-template-columns: repeat(6, minmax(0,1fr));
-      gap: 8px;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap: 10px;
     }
-    .choicesGridRand{
-      display:grid;
-      grid-template-columns: repeat(5, minmax(0,1fr));
-      gap: 8px;
+    .courseBtn{
+      padding: 18px 10px;
+      border-radius: 20px;
+      font-size: 16px;
+      line-height:1.1;
+      background: rgba(255,255,255,.10);
     }
-    .choiceBtn{
-      width:100%;
-      min-width:0;
-      padding: 10px 0;
-      border-radius: 14px;
-      font-size: 15px;
-    }
+    .courseBtn .mini{ display:block; margin-top:8px; font-size: 12px; color: rgba(255,255,255,.70); font-weight: 900; }
+
+    .choiceGrid9{ display:grid; grid-template-columns: repeat(6, minmax(0,1fr)); gap: 8px; }
+    .choiceGridN{ display:grid; grid-template-columns: repeat(5, minmax(0,1fr)); gap: 8px; }
+    .choiceBtn{ width:100%; min-width:0; padding: 10px 0; border-radius: 14px; font-size: 15px; }
     .choiceBtn.on{
       outline: 2px solid rgba(96,165,250,.50);
       border-color: rgba(96,165,250,.50);
       background: rgba(96,165,250,.14);
     }
-    .toggleRow{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      justify-content:space-between;
-      flex-wrap:wrap;
-    }
-    .toggleStar{
-      display:flex;
-      align-items:center;
-      gap:10px;
-    }
-    .toggleStar .starBtn{
-      width: 54px;
-      padding: 10px 0;
-    }
-    .toggleStar .label{
+    .row{ display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+    .rowLeft{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .chip{
+      display:inline-flex; align-items:center; gap:6px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.08);
       font-size: 13px;
       font-weight: 1000;
-      color: rgba(255,255,255,.85);
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      background: rgba(245,158,11,.18);
-      border: 1px solid rgba(245,158,11,.24);
+      color: rgba(255,255,255,.90);
+      user-select:none;
     }
+    .chip.on{ border-color: rgba(245,158,11,.34); background: rgba(245,158,11,.18); }
 
-    /* quiz screen */
-    .qMath{
-      font-size: clamp(46px, 7vw, 74px);
-      font-weight: 1100;
-      letter-spacing: .4px;
-      text-shadow: 0 8px 20px rgba(0,0,0,.35);
-    }
-    .qYomi{
-      font-size: clamp(18px, 3.7vw, 30px);
-      font-weight: 1000;
-      color: #93c5fd;
-    }
-    .segmeter{
-      width: min(620px, 100%);
-      display:flex;
-      gap: 8px;
-      align-items:center;
-      justify-content:center;
-      margin-top: 4px;
-    }
-    .seg{
-      flex: 1 1 0;
-      height: 16px;
-      border-radius: 12px;
-      background: rgba(255,255,255,.10);
-      border: 1px solid rgba(255,255,255,.16);
-      overflow:hidden;
-      position:relative;
-    }
-    .seg.on::before{
-      content:"";
-      position:absolute; inset:0;
-      background: linear-gradient(90deg, rgba(34,197,94,.95), rgba(96,165,250,.95));
-    }
-
-    .controlBar{
+    .mascotMini{
       width:min(720px, 100%);
       display:flex;
       align-items:center;
-      justify-content:space-between;
+      justify-content:flex-start;
       gap: 10px;
-      margin-top: 8px;
-      flex-wrap:wrap;
+      margin-bottom: 4px;
+      user-select:none;
     }
-    .scoreBits{
-      display:flex;
-      align-items:center;
-      gap: 10px;
-      flex-wrap:wrap;
+    .face{
+      width:44px;height:44px;border-radius:16px;
+      background:
+        radial-gradient(circle at 30% 25%, rgba(255,255,255,.22), transparent 40%),
+        linear-gradient(135deg, rgba(245,158,11,.70), rgba(96,165,250,.55));
+      display:flex;align-items:center;justify-content:center;
+      font-size: 24px;
+      box-shadow: 0 12px 26px rgba(0,0,0,.28);
+      flex: 0 0 auto;
     }
-    .bit{
-      display:inline-flex;
-      align-items:center;
-      gap: 8px;
-      padding: 8px 10px;
-      border-radius: 999px;
-      background: rgba(255,255,255,.08);
+    .bubbleMini{
+      flex: 1;
+      text-align:left;
+      background: rgba(2, 6, 23, .52);
       border: 1px solid rgba(255,255,255,.14);
-      font-weight: 1000;
+      border-radius: 16px;
+      padding: 8px 10px;
+      min-height: 40px;
+      line-height: 1.25;
+      font-weight: 900;
+      color: rgba(255,255,255,.88);
     }
-    .bit .badge{
-      width: 26px; height: 26px;
-      border-radius: 12px;
-      display:inline-flex; align-items:center; justify-content:center;
-      background: rgba(255,255,255,.10);
-      border: 1px solid rgba(255,255,255,.16);
-      font-size: 16px;
-      line-height: 1;
-    }
+    .bubbleMini b{ color: #a7f3d0; }
+
+    .qMath{ font-size: clamp(46px, 7vw, 74px); font-weight: 1100; letter-spacing: .4px; text-shadow: 0 8px 20px rgba(0,0,0,.35); }
+    .qYomi{ font-size: clamp(18px, 3.7vw, 30px); font-weight: 1000; color: #93c5fd; }
+    .segmeter{ width: min(620px, 100%); display:flex; gap: 8px; align-items:center; justify-content:center; margin-top: 4px; }
+    .seg{ flex: 1 1 0; height: 16px; border-radius: 12px; background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.16); overflow:hidden; position:relative; }
+    .seg.on::before{ content:""; position:absolute; inset:0; background: linear-gradient(90deg, rgba(34,197,94,.95), rgba(96,165,250,.95)); }
+
+    .controlBar{ width:min(720px, 100%); display:flex; align-items:center; justify-content:space-between; gap: 10px; margin-top: 8px; flex-wrap:wrap; }
+    .scoreBits{ display:flex; align-items:center; gap: 10px; flex-wrap:wrap; }
+    .bit{ display:inline-flex; align-items:center; gap: 8px; padding: 8px 10px; border-radius: 999px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14); font-weight: 1000; }
+    .bit .badge{ width: 26px; height: 26px; border-radius: 12px; display:inline-flex; align-items:center; justify-content:center; background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.16); font-size: 16px; line-height: 1; }
     .bit.good .badge{ background: rgba(34,197,94,.18); border-color: rgba(34,197,94,.25); }
     .bit.bad .badge{ background: rgba(239,68,68,.18); border-color: rgba(239,68,68,.25); }
     .bit.q .badge{ background: rgba(96,165,250,.18); border-color: rgba(96,165,250,.25); }
 
     .flashGood{ animation: flashGood .28s ease; }
     .flashBad{ animation: flashBad .28s ease; }
-    @keyframes flashGood{
-      0%{ box-shadow: var(--shadow); border-color: rgba(34,197,94,.25); }
-      45%{ box-shadow: 0 0 0 4px rgba(34,197,94,.18), var(--shadow); border-color: rgba(34,197,94,.60); }
-      100%{ box-shadow: var(--shadow); border-color: rgba(255,255,255,.14); }
-    }
-    @keyframes flashBad{
-      0%{ box-shadow: var(--shadow); border-color: rgba(239,68,68,.25); }
-      45%{ box-shadow: 0 0 0 4px rgba(239,68,68,.18), var(--shadow); border-color: rgba(239,68,68,.60); }
-      100%{ box-shadow: var(--shadow); border-color: rgba(255,255,255,.14); }
-    }
+    @keyframes flashGood{ 0%{ box-shadow: var(--shadow); border-color: rgba(34,197,94,.25);} 45%{ box-shadow: 0 0 0 4px rgba(34,197,94,.18), var(--shadow); border-color: rgba(34,197,94,.60);} 100%{ box-shadow: var(--shadow); border-color: rgba(255,255,255,.14);} }
+    @keyframes flashBad{ 0%{ box-shadow: var(--shadow); border-color: rgba(239,68,68,.25);} 45%{ box-shadow: 0 0 0 4px rgba(239,68,68,.18), var(--shadow); border-color: rgba(239,68,68,.60);} 100%{ box-shadow: var(--shadow); border-color: rgba(255,255,255,.14);} }
 
-    /* result */
-    .resultTitle{
-      font-size: clamp(34px, 5vw, 52px);
-      font-weight: 1100;
-    }
-    .resultLine{
-      font-size: 18px;
-      font-weight: 1000;
-      color: rgba(255,255,255,.88);
-    }
+    .resultTitle{ font-size: clamp(34px, 5vw, 52px); font-weight: 1100; }
+    .resultLine{ font-size: 18px; font-weight: 1000; color: rgba(255,255,255,.88); }
 
-    @media (max-height: 720px){
-      .mascotCard{ padding: 10px 12px; }
-      .face{ width:58px; height:58px; border-radius:20px; font-size: 34px; }
-      .panel{ gap: 10px; }
-      .courseRow{ padding: 10px; gap: 8px; }
-      .choiceBtn{ padding: 9px 0; }
-    }
+    @media (max-height: 720px){ .courseBtn{ padding: 14px 10px; } .choiceBtn{ padding: 9px 0; } .panel{ gap: 10px; } }
+    @media (max-width: 520px){ .courseGrid{ grid-template-columns: 1fr; } .choiceGrid9{ grid-template-columns: repeat(5, minmax(0,1fr)); } }
   </style>
 </head>
 
-<body data-mode="start">
+<body>
   <div class="app">
     <header>
       <div class="brand">
@@ -418,60 +268,42 @@
     </header>
 
     <div class="main">
-      <div class="card mascotCard">
-        <div class="mascot">
-          <div class="face" id="face" aria-hidden="true">🤖</div>
-          <div class="bubble">
-            <div id="bubbleMain"><b>ゲームをえらんでね！</b></div>
-            <div id="bubbleSub" style="margin-top:6px; color: rgba(255,255,255,.75); font-weight:900;">（マイクの きょかが ひつようだよ）</div>
+      <div class="card" id="mainCard">
+        <!-- COURSE -->
+        <div class="screen" id="screenCourse">
+          <div class="panel">
+            <h2>ゲームをえらぶ <span class="subtitle">（まず ここ）</span></h2>
+            <div class="courseGrid">
+              <button class="btn courseBtn" id="courseAsc">のぼり九九<span class="mini">だんを えらんで はじめる</span></button>
+              <button class="btn courseBtn" id="courseDesc">くだり九九<span class="mini">だんを えらんで はじめる</span></button>
+              <button class="btn courseBtn" id="courseRand">ばらばら九九<span class="mini">もんすうを えらんで はじめる</span></button>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div class="card" id="mainCard">
-        <!-- START -->
-        <div class="screen" id="screenStart">
+        <!-- DAN -->
+        <div class="screen hidden" id="screenDan">
           <div class="panel">
-            <h2>ゲームせんたく <span class="tag" id="lockTag">えらぶと ロック</span></h2>
+            <h2 id="danTitle">だんを えらぶ</h2>
 
-            <div class="courseRow" id="rowAsc">
-              <div class="courseTitle">
-                <div>のぼり九九</div>
-                <small>1→9</small>
-              </div>
-              <div class="choicesGrid" id="ascChoices"></div>
-              <div class="toggleRow">
-                <div class="toggleStar">
-                  <button class="btn choiceBtn starBtn" id="ascStar">★</button>
-                  <div class="label">ばらばら</div>
+            <div id="danPanelAscDesc" class="hidden">
+              <div class="choiceGrid9" id="danChoices"></div>
+              <div class="row" style="margin-top:10px;">
+                <div class="rowLeft">
+                  <button class="btn chip" id="starChip">★ ばらばら</button>
                 </div>
-                <button class="btn big primary" id="beginBtnAsc"><span class="icon">▶</span> はじめる</button>
+                <div class="rowLeft">
+                  <button class="btn big" id="backToCourse"><span class="icon">↩</span> もどる</button>
+                  <button class="btn big primary" id="beginBtn"><span class="icon">▶</span> はじめる</button>
+                </div>
               </div>
             </div>
 
-            <div class="courseRow" id="rowDesc">
-              <div class="courseTitle">
-                <div>くだり九九</div>
-                <small>9→1</small>
-              </div>
-              <div class="choicesGrid" id="descChoices"></div>
-              <div class="toggleRow">
-                <div class="toggleStar">
-                  <button class="btn choiceBtn starBtn" id="descStar">★</button>
-                  <div class="label">ばらばら</div>
-                </div>
-                <button class="btn big primary" id="beginBtnDesc"><span class="icon">▶</span> はじめる</button>
-              </div>
-            </div>
-
-            <div class="courseRow" id="rowRand">
-              <div class="courseTitle">
-                <div>ばらばら九九</div>
-                <small>ランダム</small>
-              </div>
-              <div class="choicesGridRand" id="randChoices"></div>
-              <div class="toggleRow" style="justify-content:flex-end;">
-                <button class="btn big primary" id="beginBtnRand"><span class="icon">▶</span> はじめる</button>
+            <div id="danPanelRand" class="hidden">
+              <div class="choiceGridN" id="countChoices"></div>
+              <div class="row" style="margin-top:10px; justify-content:flex-end;">
+                <button class="btn big" id="backToCourse2"><span class="icon">↩</span> もどる</button>
+                <button class="btn big primary" id="beginBtn2"><span class="icon">▶</span> はじめる</button>
               </div>
             </div>
           </div>
@@ -479,6 +311,11 @@
 
         <!-- QUIZ -->
         <div class="screen hidden" id="screenQuiz">
+          <div class="mascotMini">
+            <div class="face" id="face" aria-hidden="true">🤖</div>
+            <div class="bubbleMini" id="bubbleMini"><b>クック先生：</b> いくよ！</div>
+          </div>
+
           <div class="qMath" id="qMath">2 × 1</div>
           <div class="qYomi" id="qYomi">にいちが</div>
 
@@ -523,63 +360,64 @@
 <script>
   const $ = (id)=>document.getElementById(id);
 
-  // UI
-  const face = $("face");
-  const bubbleMain = $("bubbleMain");
-  const bubbleSub  = $("bubbleSub");
-
+  // Header
   const soundBtn = $("soundBtn");
   const resetBtn = $("resetBtn");
 
-  const screenStart = $("screenStart");
-  const screenQuiz  = $("screenQuiz");
-  const screenResult= $("screenResult");
+  // Screens
+  const screenCourse = $("screenCourse");
+  const screenDan    = $("screenDan");
+  const screenQuiz   = $("screenQuiz");
+  const screenResult = $("screenResult");
 
-  const rowAsc  = $("rowAsc");
-  const rowDesc = $("rowDesc");
-  const rowRand = $("rowRand");
+  // Course buttons
+  const courseAsc = $("courseAsc");
+  const courseDesc= $("courseDesc");
+  const courseRand= $("courseRand");
 
-  const ascChoices = $("ascChoices");
-  const descChoices = $("descChoices");
-  const randChoices = $("randChoices");
+  // Dan screen
+  const danTitle = $("danTitle");
+  const danPanelAscDesc = $("danPanelAscDesc");
+  const danPanelRand = $("danPanelRand");
+  const danChoices = $("danChoices");
+  const countChoices = $("countChoices");
+  const starChip = $("starChip");
+  const backToCourse = $("backToCourse");
+  const backToCourse2 = $("backToCourse2");
+  const beginBtn = $("beginBtn");
+  const beginBtn2 = $("beginBtn2");
 
-  const ascStar = $("ascStar");
-  const descStar = $("descStar");
-
-  const beginBtnAsc  = $("beginBtnAsc");
-  const beginBtnDesc = $("beginBtnDesc");
-  const beginBtnRand = $("beginBtnRand");
-
+  // Quiz UI
+  const face = $("face");
+  const bubbleMini = $("bubbleMini");
   const qMath = $("qMath");
   const qYomi = $("qYomi");
   const segEls = [$("seg1"),$("seg2"),$("seg3"),$("seg4"),$("seg5")];
-
   const bitQ = $("bitQ");
   const bitGood = $("bitGood");
   const bitBad = $("bitBad");
-
   const playStopBtn = $("playStopBtn");
   const playStopIcon = $("playStopIcon");
-
   const fallbackQuiz = $("fallbackQuiz");
   const kbdQuiz = $("kbdQuiz");
 
+  // Result
   const resultLine = $("resultLine");
   const againBtn = $("againBtn");
   const backBtn = $("backBtn");
 
   // Mascot
   const FACES = ["🤖","🦊","🐸","🐼","🦉","🐙","🧠","🚀"];
+  const say = (main)=>{ bubbleMini.innerHTML = main; };
   function rand(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
-  function setMascot(emoji, main, sub){
+  function setMascot(emoji, msgHtml){
     face.textContent = emoji;
-    bubbleMain.innerHTML = main;
-    bubbleSub.textContent = sub || "";
+    say(msgHtml);
   }
 
   function setScreen(which){
-    document.body.setAttribute("data-mode", which);
-    screenStart.classList.toggle("hidden", which !== "start");
+    screenCourse.classList.toggle("hidden", which !== "course");
+    screenDan.classList.toggle("hidden", which !== "dan");
     screenQuiz.classList.toggle("hidden", which !== "quiz");
     screenResult.classList.toggle("hidden", which !== "result");
   }
@@ -704,9 +542,8 @@
       const sr = ctx.sampleRate;
       const buf = ctx.createBuffer(1, Math.floor(sr*dur), sr);
       const data = buf.getChannelData(0);
-      for (let i=0;i<data.length;i++){
-        data[i] = (Math.random()*2-1) * 0.55;
-      }
+      for (let i=0;i<data.length;i++) data[i] = (Math.random()*2-1) * 0.55;
+
       const src = ctx.createBufferSource();
       src.buffer = buf;
 
@@ -720,9 +557,7 @@
       g2.gain.linearRampToValueAtTime(0.14, now + 0.06);
       g2.gain.setTargetAtTime(0.0001, now + dur, 0.12);
 
-      src.connect(bp);
-      bp.connect(g2);
-      g2.connect(ctx.destination);
+      src.connect(bp); bp.connect(g2); g2.connect(ctx.destination);
 
       const pulseCount = 10;
       for (let p=0;p<pulseCount;p++){
@@ -731,7 +566,6 @@
         g2.gain.setValueAtTime(v, t);
         g2.gain.setValueAtTime(0.0001, t + 0.03 + Math.random()*0.02);
       }
-
       src.start(now);
       src.stop(now + dur);
     }catch{}
@@ -749,7 +583,6 @@
     rec.interimResults = false;
     rec.maxAlternatives = 3;
     rec.continuous = false;
-
     rec.onresult = (ev) => {
       if (!running || paused || lockedNext) return;
       const res = ev.results?.[0];
@@ -795,103 +628,100 @@
     return null;
   }
 
-  // ---------- Game selection state ----------
+  // ---------- Selection state ----------
   const COURSE = { ASC:"asc", DESC:"desc", RAND:"rand" };
-
-  let activeCourse = null; // locked once set
-  let ascDans = new Set();  // selected multiple
-  let descDans = new Set();
+  let selectedCourse = null;
+  let selectedDans = new Set();
+  let starOn = false;
   let randCount = 10;
-  let ascStarOn = false;
-  let descStarOn = false;
 
-  function lockToCourse(course){
-    if (activeCourse && activeCourse !== course) return;
-    if (!activeCourse){
-      activeCourse = course;
-      updateLockUI();
-    }
-  }
-  function updateLockUI(){
-    rowAsc.classList.toggle("locked", activeCourse && activeCourse !== COURSE.ASC);
-    rowDesc.classList.toggle("locked", activeCourse && activeCourse !== COURSE.DESC);
-    rowRand.classList.toggle("locked", activeCourse && activeCourse !== COURSE.RAND);
+  function openDanScreen(course){
+    selectedCourse = course;
 
-    setDisabledRow(rowAsc, activeCourse && activeCourse !== COURSE.ASC);
-    setDisabledRow(rowDesc, activeCourse && activeCourse !== COURSE.DESC);
-    setDisabledRow(rowRand, activeCourse && activeCourse !== COURSE.RAND);
-  }
-  function setDisabledRow(rowEl, disabled){
-    rowEl.querySelectorAll("button").forEach(b=>{
-      if (disabled){
-        b.disabled = true;
-        b.classList.add("disabled");
-      }else{
-        b.disabled = false;
-        b.classList.remove("disabled");
-      }
-    });
+    danPanelAscDesc.classList.toggle("hidden", course === COURSE.RAND);
+    danPanelRand.classList.toggle("hidden", course !== COURSE.RAND);
+
+    if (course === COURSE.ASC) danTitle.textContent = "のぼり九九：だんを えらぶ";
+    if (course === COURSE.DESC) danTitle.textContent = "くだり九九：だんを えらぶ";
+    if (course === COURSE.RAND) danTitle.textContent = "ばらばら九九：もんすうを えらぶ";
+
+    selectedDans = new Set();
+    starOn = false;
+    randCount = 10;
+
+    renderDanButtons();
+    renderCountButtons();
+    updateStarChip();
+    updateBeginEnabled();
+    setScreen("dan");
   }
 
-  function makeDanButtons(container, setRef, course){
-    container.innerHTML = "";
+  function renderDanButtons(){
+    danChoices.innerHTML = "";
     for (let i=1;i<=9;i++){
       const b = document.createElement("button");
       b.className = "btn choiceBtn";
       b.textContent = String(i);
       b.addEventListener("click", ()=>{
-        lockToCourse(course);
-        if (activeCourse !== course) return;
-        if (setRef.has(i)) setRef.delete(i);
-        else setRef.add(i);
-        b.classList.toggle("on", setRef.has(i));
+        if (selectedDans.has(i)) selectedDans.delete(i);
+        else selectedDans.add(i);
+        b.classList.toggle("on", selectedDans.has(i));
+        updateBeginEnabled();
       });
-      container.appendChild(b);
+      danChoices.appendChild(b);
     }
   }
 
-  function makeRandButtons(container){
-    container.innerHTML = "";
-    [10,20,30,40,50].forEach(n=>{
+  function updateStarChip(){
+    starChip.classList.toggle("on", starOn);
+  }
+  starChip.addEventListener("click", ()=>{
+    starOn = !starOn;
+    updateStarChip();
+  });
+
+  function renderCountButtons(){
+    countChoices.innerHTML = "";
+    [10,20,30,40,50].forEach((n)=>{
       const b = document.createElement("button");
       b.className = "btn choiceBtn";
       b.textContent = String(n);
       b.addEventListener("click", ()=>{
-        lockToCourse(COURSE.RAND);
-        if (activeCourse !== COURSE.RAND) return;
         randCount = n;
-        [...container.children].forEach(x=>x.classList.remove("on"));
+        [...countChoices.children].forEach(x=>x.classList.remove("on"));
         b.classList.add("on");
       });
-      container.appendChild(b);
+      countChoices.appendChild(b);
+      if (n === 10) b.classList.add("on");
     });
-    container.children[0].classList.add("on");
   }
 
-  function updateStarUI(){
-    ascStar.classList.toggle("on", ascStarOn);
-    descStar.classList.toggle("on", descStarOn);
+  function updateBeginEnabled(){
+    if (selectedCourse === COURSE.RAND){
+      beginBtn2.disabled = false;
+      beginBtn2.classList.remove("disabled");
+      return;
+    }
+    const ok = selectedDans.size > 0;
+    beginBtn.disabled = !ok;
+    beginBtn.classList.toggle("disabled", !ok);
   }
 
-  ascStar.addEventListener("click", ()=>{
-    lockToCourse(COURSE.ASC);
-    if (activeCourse !== COURSE.ASC) return;
-    ascStarOn = !ascStarOn;
-    updateStarUI();
-  });
-  descStar.addEventListener("click", ()=>{
-    lockToCourse(COURSE.DESC);
-    if (activeCourse !== COURSE.DESC) return;
-    descStarOn = !descStarOn;
-    updateStarUI();
-  });
+  function goCourse(){
+    stopRecognition();
+    stopTimers();
+    window.speechSynthesis && window.speechSynthesis.cancel();
+    setScreen("course");
+  }
+  backToCourse.addEventListener("click", goCourse);
+  backToCourse2.addEventListener("click", goCourse);
 
   // ---------- Quiz state ----------
   const LIMIT_MS = 5000;
   const LIMIT_SEC = 5;
 
-  let running = false;     // session active
-  let paused  = true;      // in quiz screen, play/stop toggles
+  let running = false;
+  let paused  = true;
   let lockedNext = false;
 
   let questionPool = [];
@@ -906,9 +736,7 @@
   let lastShownSec = 5;
 
   function setSegsOn(n){
-    for (let i=0;i<segEls.length;i++){
-      segEls[i].classList.toggle("on", i < n);
-    }
+    for (let i=0;i<segEls.length;i++) segEls[i].classList.toggle("on", i < n);
   }
 
   function flash(goodFlag){
@@ -924,9 +752,7 @@
     bitBad.textContent = String(bad);
   }
 
-  function speakQuestion(q){
-    speak(`${q.chant}。`, {rate:1.22, pitch:1.05});
-  }
+  function speakQuestion(q){ speak(`${q.chant}。`, {rate:1.22, pitch:1.05}); }
 
   function shuffle(arr){
     for (let i=arr.length-1;i>0;i--){
@@ -938,9 +764,7 @@
 
   function buildPoolAscDesc(course){
     const isAsc = (course === COURSE.ASC);
-    const dans = isAsc ? [...ascDans] : [...descDans];
-    if (dans.length === 0) return [];
-    dans.sort((a,b)=>a-b);
+    const dans = [...selectedDans].sort((a,b)=>a-b);
     const bOrder = isAsc ? [1,2,3,4,5,6,7,8,9] : [9,8,7,6,5,4,3,2,1];
 
     const pool = [];
@@ -950,59 +774,47 @@
         pool.push({a,b,chant: it.chant, ans: it.ans});
       }
     }
-
-    const starOn = isAsc ? ascStarOn : descStarOn;
     if (starOn) shuffle(pool);
     return pool;
   }
 
   function buildPoolRand(){
     const all = [];
-    for (let a=1;a<=9;a++){
-      for (let b=1;b<=9;b++){
-        all.push({a,b, chant: KUKU[a][b].chant, ans: KUKU[a][b].ans});
-      }
-    }
+    for (let a=1;a<=9;a++) for (let b=1;b<=9;b++) all.push({a,b, chant: KUKU[a][b].chant, ans: KUKU[a][b].ans});
     shuffle(all);
     return all.slice(0, randCount);
   }
 
-  function startGame(course){
+  function startGame(){
     ensureAudioCtx();
     stopRecognition();
     window.speechSynthesis && window.speechSynthesis.cancel();
 
-    activeCourse = course;
-    updateLockUI();
+    if (!selectedCourse) return;
 
-    if (course === COURSE.RAND) questionPool = buildPoolRand();
-    else questionPool = buildPoolAscDesc(course);
+    if (selectedCourse === COURSE.RAND) questionPool = buildPoolRand();
+    else questionPool = buildPoolAscDesc(selectedCourse);
 
-    if (!questionPool.length){
-      setMascot("😅", "<b>だんを えらんでね！</b>", "（1〜9 を ひとついじょう）");
-      return;
-    }
+    if (!questionPool.length) return;
 
     totalQuestions = questionPool.length;
-    idx = 0;
-    good = 0;
-    bad  = 0;
-    current = null;
+    idx = 0; good = 0; bad = 0; current = null;
 
     running = true;
     paused = false;
     lockedNext = false;
 
-    setMascot("🤖", "<b>クック先生：いくよ！</b>", "5びょう いないに こたえてね");
+    setMascot("🤖", "<b>クック先生：</b> いくよ！");
     setScreen("quiz");
     updateScoreUI();
     setPlayStopIcon();
     nextQuestion();
   }
 
-  function setPlayStopIcon(){
-    playStopIcon.textContent = paused ? "▶" : "⏸";
-  }
+  beginBtn.addEventListener("click", ()=>{ updateBeginEnabled(); if (!beginBtn.disabled) startGame(); });
+  beginBtn2.addEventListener("click", startGame);
+
+  function setPlayStopIcon(){ playStopIcon.textContent = paused ? "▶" : "⏸"; }
 
   function stopTimers(){
     if (tickTimer) clearInterval(tickTimer);
@@ -1017,7 +829,7 @@
     stopTimers();
     window.speechSynthesis && window.speechSynthesis.cancel();
     setPlayStopIcon();
-    setMascot(rand(FACES), "<b>ストップ！</b>", "▶ で さいかい");
+    setMascot(rand(FACES), "<b>ストップ！</b> ▶で さいかい");
   }
 
   function resumeGame(){
@@ -1025,21 +837,15 @@
     paused = false;
     lockedNext = false;
     setPlayStopIcon();
-    setMascot("🤖", "<b>さいかい！</b>", "");
+    setMascot("🤖", "<b>クック先生：</b> さいかい！");
     startTimer();
-    if (recognitionOK){
-      setTimeout(()=>{ if (running && !paused && !lockedNext) startRecognition(); }, 180);
-    } else {
-      fallbackQuiz.classList.remove("hidden");
-    }
+    if (recognitionOK) setTimeout(()=>{ if (running && !paused && !lockedNext) startRecognition(); }, 180);
+    else fallbackQuiz.classList.remove("hidden");
   }
 
   playStopBtn.addEventListener("click", ()=>{
     ensureAudioCtx();
-    if (!running){
-      setMascot("🤖", "<b>ゲームを えらんでね！</b>", "");
-      return;
-    }
+    if (!running) return;
     if (paused) resumeGame();
     else pauseGame();
   });
@@ -1068,7 +874,7 @@
     if (!running || paused || lockedNext) return;
     bad += 1;
     updateScoreUI();
-    setMascot("😵‍💫", "<b>ブッブー！</b>", "");
+    setMascot("😵‍💫", "<b>ブッブー！</b>");
     flash(false);
     playWrong();
     lockAndAdvance(360);
@@ -1079,10 +885,7 @@
     stopRecognition();
     window.speechSynthesis && window.speechSynthesis.cancel();
 
-    if (idx >= totalQuestions){
-      finish();
-      return;
-    }
+    if (idx >= totalQuestions){ finish(); return; }
 
     current = questionPool[idx];
     idx += 1;
@@ -1098,11 +901,8 @@
     speakQuestion(current);
     startTimer();
 
-    if (recognitionOK){
-      setTimeout(()=>{ if (running && !paused && !lockedNext) startRecognition(); }, 240);
-    } else {
-      fallbackQuiz.classList.remove("hidden");
-    }
+    if (recognitionOK) setTimeout(()=>{ if (running && !paused && !lockedNext) startRecognition(); }, 240);
+    else fallbackQuiz.classList.remove("hidden");
   }
 
   function lockAndAdvance(delayMs){
@@ -1120,14 +920,14 @@
     if (ok){
       good += 1;
       updateScoreUI();
-      setMascot(rand(FACES), "<b>いいね！</b>", "");
+      setMascot(rand(FACES), "<b>いいね！</b>");
       flash(true);
       playCorrect();
       lockAndAdvance(300);
     }else{
       bad += 1;
       updateScoreUI();
-      setMascot("😵‍💫", "<b>ブッブー！</b>", "");
+      setMascot("😵‍💫", "<b>ブッブー！</b>");
       flash(false);
       playWrong();
       lockAndAdvance(360);
@@ -1144,72 +944,37 @@
 
     playCheerAndClap();
     resultLine.textContent = `⭕ ${good} / ${totalQuestions}　（❌ ${bad}）`;
-    setMascot("🎉", "<b>クリア！</b>", "やったね！");
+    setMascot("🎉", "<b>クック先生：</b> クリア！");
     setScreen("result");
   }
 
-  beginBtnAsc.addEventListener("click", ()=>{
-    lockToCourse(COURSE.ASC);
-    if (activeCourse !== COURSE.ASC) return;
-    startGame(COURSE.ASC);
-  });
-  beginBtnDesc.addEventListener("click", ()=>{
-    lockToCourse(COURSE.DESC);
-    if (activeCourse !== COURSE.DESC) return;
-    startGame(COURSE.DESC);
-  });
-  beginBtnRand.addEventListener("click", ()=>{
-    lockToCourse(COURSE.RAND);
-    if (activeCourse !== COURSE.RAND) return;
-    startGame(COURSE.RAND);
-  });
-
-  againBtn.addEventListener("click", ()=>{
-    if (!activeCourse) { setScreen("start"); return; }
-    startGame(activeCourse);
-  });
+  againBtn.addEventListener("click", startGame);
   backBtn.addEventListener("click", ()=>{
-    resetAll();
+    running = false; paused = true; lockedNext = true;
+    stopRecognition(); stopTimers();
+    window.speechSynthesis && window.speechSynthesis.cancel();
+    setScreen("course");
   });
 
+  // Sound test
   soundBtn.addEventListener("click", ()=>{
     ensureAudioCtx();
     playTick();
     setTimeout(()=>playCorrect(), 140);
     setTimeout(()=>playWrong(), 520);
-    setMascot(rand(FACES), "<b>おと テスト！</b>", "きこえた？");
   });
 
-  resetBtn.addEventListener("click", ()=>{
-    resetAll();
-  });
-
+  // Reset
   function resetAll(){
-    running = false;
-    paused = true;
-    lockedNext = true;
-    stopRecognition();
-    stopTimers();
+    running = false; paused = true; lockedNext = true;
+    stopRecognition(); stopTimers();
     window.speechSynthesis && window.speechSynthesis.cancel();
-
-    activeCourse = null;
-    ascDans = new Set();
-    descDans = new Set();
-    randCount = 10;
-    ascStarOn = false;
-    descStarOn = false;
-
-    [...ascChoices.children].forEach(b=>b.classList.remove("on"));
-    [...descChoices.children].forEach(b=>b.classList.remove("on"));
-    [...randChoices.children].forEach((b,i)=>b.classList.toggle("on", i===0));
-    updateStarUI();
-    updateLockUI();
-
-    setMascot("🤖", "<b>ゲームをえらんでね！</b>", "（マイクの きょかが ひつようだよ）");
-    setSegsOn(LIMIT_SEC);
-    setScreen("start");
+    selectedCourse = null; selectedDans = new Set(); starOn = false; randCount = 10;
+    setScreen("course");
   }
+  resetBtn.addEventListener("click", resetAll);
 
+  // Fallback keypad
   function renderKeypad(){
     kbdQuiz.innerHTML = "";
     for (let n=0; n<=9; n++){
@@ -1225,17 +990,18 @@
   }
   renderKeypad();
 
-  makeDanButtons(ascChoices, ascDans, COURSE.ASC);
-  makeDanButtons(descChoices, descDans, COURSE.DESC);
-  makeRandButtons(randChoices);
-  updateStarUI();
-  updateLockUI();
-
   setupRecognition();
-  if (!recognitionOK){
-    fallbackQuiz.classList.remove("hidden");
-    setMascot("😵‍💫", "<b>音声にんしきが つかえない…</b>", "（テストは タップでOK）");
-  }
+  if (!recognitionOK) fallbackQuiz.classList.remove("hidden");
+
+  // Navigation
+  courseAsc.addEventListener("click", ()=> openDanScreen(COURSE.ASC));
+  courseDesc.addEventListener("click", ()=> openDanScreen(COURSE.DESC));
+  courseRand.addEventListener("click", ()=> openDanScreen(COURSE.RAND));
+
+  // Init
+  setSegsOn(LIMIT_SEC);
+  setMascot("🤖", "<b>クック先生：</b> いくよ！");
+  setScreen("course");
 </script>
 </body>
 </html>

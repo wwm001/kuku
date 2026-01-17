@@ -4,19 +4,21 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#0b1220" />
-  <title>九九を音でおぼえる</title>
+  <title>クック先生の九九トレーニングゲーム</title>
   <style>
     :root{
-      --bg:#0b1220;
-      --card: rgba(255,255,255,.06);
-      --line: rgba(255,255,255,.12);
-      --text:#e8eefc;
-      --muted:#a8b3d4;
-      --accent:#7dd3fc;
-      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --bg:#07121f;
+      --card: rgba(255,255,255,.10);
+      --card2: rgba(255,255,255,.06);
+      --line: rgba(255,255,255,.14);
+      --text:#f2f6ff;
+      --muted:#c6d0f6;
+      --accent:#22c55e;
+      --accent2:#60a5fa;
+      --accent3:#f59e0b;
+      --danger:#ef4444;
+      --shadow: 0 14px 36px rgba(0,0,0,.40);
       --r: 22px;
-      --red1:#fb7185;
-      --red2:#f43f5e;
     }
     *{ box-sizing:border-box; }
     html, body { height: 100%; }
@@ -25,9 +27,9 @@
       font-family: system-ui, -apple-system, Segoe UI, Roboto, "Hiragino Sans", "Noto Sans JP", sans-serif;
       color:var(--text);
       background:
-        radial-gradient(1000px 700px at 20% 10%, rgba(125,211,252,.18), transparent 60%),
-        radial-gradient(900px 650px at 80% 25%, rgba(134,239,172,.12), transparent 55%),
-        radial-gradient(900px 650px at 40% 90%, rgba(252,165,165,.10), transparent 55%),
+        radial-gradient(1100px 700px at 20% 10%, rgba(96,165,250,.22), transparent 55%),
+        radial-gradient(900px 650px at 80% 30%, rgba(34,197,94,.18), transparent 55%),
+        radial-gradient(900px 650px at 45% 95%, rgba(245,158,11,.14), transparent 55%),
         var(--bg);
       overflow:hidden;
     }
@@ -35,11 +37,12 @@
       height: 100%;
       max-width: 900px;
       margin: 0 auto;
-      padding: 14px;
+      padding: 12px;
       display:flex;
       flex-direction:column;
-      gap: 12px;
+      gap: 10px;
     }
+
     header{
       display:flex;
       justify-content:space-between;
@@ -54,21 +57,35 @@
       min-width: 0;
     }
     .logo{
-      width:40px;height:40px;border-radius:14px;
-      background: linear-gradient(135deg, rgba(125,211,252,.95), rgba(134,239,172,.85));
+      width:42px;height:42px;border-radius:16px;
+      background: linear-gradient(135deg, rgba(96,165,250,.95), rgba(34,197,94,.85));
       box-shadow: var(--shadow);
       flex: 0 0 auto;
+      position:relative;
+      overflow:hidden;
+    }
+    .logo::after{
+      content:"";
+      position:absolute; inset:-55%;
+      background: linear-gradient(120deg, transparent, rgba(255,255,255,.22), transparent);
+      transform: rotate(20deg);
+      animation: shine 6s linear infinite;
+    }
+    @keyframes shine{
+      0%{transform: translateX(-50%) rotate(20deg)}
+      100%{transform: translateX(160%) rotate(20deg)}
     }
     .brandText{ display:flex; flex-direction:column; line-height:1.05; min-width:0; }
     .brandText b{
       font-size: 16px;
+      font-weight: 1000;
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
     }
     .brandText span{
       font-size: 12px;
-      color: var(--muted);
+      color: rgba(255,255,255,.75);
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
@@ -77,48 +94,47 @@
     .btn{
       appearance:none;
       border: 1px solid var(--line);
-      background: rgba(255,255,255,.06);
+      background: rgba(255,255,255,.10);
       color: var(--text);
       border-radius: 16px;
       padding: 10px 12px;
-      font-weight: 900;
+      font-weight: 1000;
       cursor:pointer;
-      box-shadow: 0 8px 18px rgba(0,0,0,.22);
+      box-shadow: 0 10px 20px rgba(0,0,0,.22);
       user-select:none;
-    }
-    .btn:active{ transform: translateY(1px); }
-    .btn.primary{
-      background: linear-gradient(135deg, rgba(125,211,252,.28), rgba(134,239,172,.18));
-      border-color: rgba(125,211,252,.30);
-    }
-    .btn.ghost{ background: rgba(255,255,255,.05); }
-    .btn.danger{
-      background: linear-gradient(135deg, rgba(251,113,133,.35), rgba(244,63,94,.22));
-      border-color: rgba(244,63,94,.45);
-      color: #fff;
-    }
-    .btn.sel{
-      outline: 2px solid rgba(125,211,252,.45);
-      border-color: rgba(125,211,252,.45);
-      background: rgba(125,211,252,.10);
-    }
-
-    .pill{
       display:inline-flex;
       align-items:center;
+      justify-content:center;
       gap:8px;
-      padding: 8px 10px;
-      border-radius: 999px;
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.12);
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 800;
-      white-space:nowrap;
+    }
+    .btn:active{ transform: translateY(1px); }
+    .btn.ghost{ background: rgba(255,255,255,.06); }
+    .btn.big{
+      border-radius: 18px;
+      padding: 12px 14px;
+      font-size: 16px;
+    }
+    .btn.primary{
+      background: linear-gradient(135deg, rgba(34,197,94,.40), rgba(96,165,250,.24));
+      border-color: rgba(34,197,94,.45);
+    }
+    .btn.disabled, .btn:disabled{
+      opacity:.45;
+      cursor: not-allowed;
+      filter: grayscale(0.3);
+    }
+    .icon{
+      width: 22px; height: 22px;
+      display:inline-flex; align-items:center; justify-content:center;
+      border-radius: 10px;
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.16);
+      font-size: 14px;
+      line-height: 1;
     }
 
     .card{
-      background: var(--card);
+      background: var(--card2);
       border: 1px solid var(--line);
       border-radius: var(--r);
       box-shadow: var(--shadow);
@@ -127,20 +143,17 @@
 
     .main{
       flex: 1;
+      min-height: 0;
       display:flex;
       flex-direction:column;
-      gap: 12px;
-      min-height: 0;
+      gap: 10px;
     }
 
-    .topRow{
-      display:flex;
-      gap: 12px;
-      align-items:stretch;
-      flex-wrap:wrap;
+    /* mascot */
+    .mascotCard{
+      padding: 12px 14px;
+      background: rgba(255,255,255,.09);
     }
-    .topRow .card{ flex:1; min-width: 260px; }
-
     .mascot{
       display:flex;
       gap: 12px;
@@ -148,152 +161,41 @@
     }
     .face{
       width:64px;height:64px;border-radius:22px;
-      background: radial-gradient(circle at 30% 25%, rgba(255,255,255,.25), transparent 35%),
-                  linear-gradient(135deg, rgba(125,211,252,.9), rgba(167,139,250,.55));
+      background:
+        radial-gradient(circle at 30% 25%, rgba(255,255,255,.22), transparent 40%),
+        linear-gradient(135deg, rgba(245,158,11,.70), rgba(96,165,250,.55));
       display:flex;align-items:center;justify-content:center;
       font-size: 36px;
-      box-shadow: 0 10px 25px rgba(0,0,0,.25);
-      position:relative;
-      overflow:hidden;
+      box-shadow: 0 12px 26px rgba(0,0,0,.28);
       flex: 0 0 auto;
-    }
-    .face::after{
-      content:"";
-      position:absolute; inset:-40%;
-      background: linear-gradient(120deg, transparent, rgba(255,255,255,.16), transparent);
-      transform: rotate(20deg);
-      animation: shine 7s linear infinite;
-    }
-    @keyframes shine{
-      0%{transform: translateX(-40%) rotate(20deg)}
-      100%{transform: translateX(140%) rotate(20deg)}
     }
     .bubble{
       flex: 1;
-      background: rgba(15, 23, 42, .65);
-      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(2, 6, 23, .55);
+      border: 1px solid rgba(255,255,255,.14);
       border-radius: 18px;
       padding: 10px 12px;
       min-height: 56px;
       line-height: 1.35;
-      position:relative;
     }
-    .bubble::before{
-      content:"";
-      position:absolute;
-      left:-10px; top:18px;
-      width:18px; height:18px;
-      background: rgba(15, 23, 42, .65);
-      border-left: 1px solid rgba(255,255,255,.12);
-      border-bottom: 1px solid rgba(255,255,255,.12);
-      transform: rotate(45deg);
-    }
-    .bubble b{ color: var(--accent); }
+    .bubble b{ color: #a7f3d0; }
 
-    .quiz{
-      flex:1;
-      display:flex;
-      flex-direction:column;
-      gap: 12px;
-      min-height: 0;
-    }
+    /* screens */
     .screen{
       flex: 1;
+      min-height: 0;
       display:flex;
       flex-direction:column;
       justify-content:center;
       align-items:center;
       text-align:center;
       gap: 10px;
-      min-height: 0;
     }
-    .qMath{
-      font-size: clamp(44px, 7vw, 72px);
-      font-weight: 1000;
-      letter-spacing: .5px;
-    }
-    .qYomi{
-      font-size: clamp(18px, 3.5vw, 28px);
-      font-weight: 900;
-      color: var(--accent);
-    }
-    .qSub{
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 800;
-      margin-top: 2px;
-      line-height: 1.5;
-    }
-
-    /* 5-seg countdown */
-    .segmeter{
-      width: min(620px, 100%);
-      display:flex;
-      gap: 8px;
-      align-items:center;
-      justify-content:center;
-      margin-top: 6px;
-    }
-    .seg{
-      flex: 1 1 0;
-      height: 16px;
-      border-radius: 10px;
-      background: rgba(255,255,255,.08);
-      border: 1px solid rgba(255,255,255,.12);
-      overflow:hidden;
-      position:relative;
-    }
-    .seg.on::before{
-      content:"";
-      position:absolute; inset:0;
-      background: linear-gradient(90deg, rgba(125,211,252,.9), rgba(134,239,172,.9));
-    }
-
-    .bottomRow{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap: 10px;
-      flex-wrap:wrap;
-    }
-    .statusLine{
-      display:flex;
-      gap: 10px;
-      flex-wrap:wrap;
-      align-items:center;
-    }
-
-    .flashGood{ animation: flashGood .28s ease; }
-    .flashBad{ animation: flashBad .28s ease; }
-    @keyframes flashGood{
-      0%{ box-shadow: var(--shadow); border-color: rgba(134,239,172,.3); }
-      40%{ box-shadow: 0 0 0 4px rgba(134,239,172,.18), var(--shadow); border-color: rgba(134,239,172,.55); }
-      100%{ box-shadow: var(--shadow); border-color: var(--line); }
-    }
-    @keyframes flashBad{
-      0%{ box-shadow: var(--shadow); border-color: rgba(252,165,165,.3); }
-      40%{ box-shadow: 0 0 0 4px rgba(252,165,165,.18), var(--shadow); border-color: rgba(252,165,165,.55); }
-      100%{ box-shadow: var(--shadow); border-color: var(--line); }
-    }
-
     .hidden{ display:none !important; }
-
-    /* mode-based visibility (no scroll on start screen) */
-    body[data-mode="start"] .hideOnStart{ display:none !important; }
-    body[data-mode="start"] .quiz.card{ padding: 12px; }
-    body[data-mode="start"] .panel{ gap: 10px; }
-    body[data-mode="start"] .courseRow{ padding: 10px; gap: 6px; }
-    body[data-mode="start"] .panel h2{ font-size: 17px; }
-    body[data-mode="start"] .note{ font-size: 11px; }
-    body[data-mode="start"] .choiceBtn{ padding: 9px 10px; min-width: 44px; }
-    @media (max-height: 720px){
-      body[data-mode="start"] .note{ display:none; }
-    }
-
 
     /* start screen */
     .panel{
-      width: min(720px, 100%);
+      width: min(760px, 100%);
       text-align:left;
       display:flex;
       flex-direction:column;
@@ -304,15 +206,31 @@
       font-size: 18px;
       font-weight: 1000;
       letter-spacing: .2px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .panel h2 .tag{
+      font-size: 12px;
+      font-weight: 1000;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(34,197,94,.16);
+      border: 1px solid rgba(34,197,94,.25);
+      color: rgba(255,255,255,.88);
     }
     .courseRow{
       display:flex;
       flex-direction:column;
-      gap: 8px;
+      gap: 10px;
       padding: 12px;
       border-radius: 18px;
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.07);
+    }
+    .courseRow.locked{
+      opacity:.55;
+      filter: grayscale(0.25);
     }
     .courseTitle{
       display:flex;
@@ -321,70 +239,164 @@
       gap:10px;
       font-weight: 1000;
     }
-    .courseTitle span{
-      color: var(--muted);
+    .courseTitle small{
       font-weight: 900;
-      font-size: 12px;
-    }
-    .choices{
-      display:flex;
-      gap: 8px;
-      flex-wrap:wrap;
+      color: rgba(255,255,255,.75);
     }
     .choicesGrid{
       display:grid;
       grid-template-columns: repeat(6, minmax(0,1fr));
       gap: 8px;
     }
-    .choicesGrid .choiceBtn{ width:100%; min-width: 0; }
     .choicesGridRand{
       display:grid;
       grid-template-columns: repeat(5, minmax(0,1fr));
       gap: 8px;
     }
-    .choicesGridRand .choiceBtn{ width:100%; min-width: 0; }
     .choiceBtn{
-      padding: 10px 12px;
+      width:100%;
+      min-width:0;
+      padding: 10px 0;
       border-radius: 14px;
-      min-width: 46px;
-      text-align:center;
       font-size: 15px;
     }
-    .span2{ grid-column: span 2; }
-    .star{
+    .choiceBtn.on{
+      outline: 2px solid rgba(96,165,250,.50);
+      border-color: rgba(96,165,250,.50);
+      background: rgba(96,165,250,.14);
+    }
+    .toggleRow{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+    }
+    .toggleStar{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .toggleStar .starBtn{
+      width: 54px;
+      padding: 10px 0;
+    }
+    .toggleStar .label{
+      font-size: 13px;
+      font-weight: 1000;
+      color: rgba(255,255,255,.85);
       display:inline-flex;
       align-items:center;
-      justify-content:center;
-      width: 24px;
-      height: 24px;
-      border-radius: 8px;
-      background: rgba(255,255,255,.10);
-      border: 1px solid rgba(255,255,255,.14);
-      margin-left: 6px;
-      font-size: 14px;
-    }
-    .note{
-      font-size: 12px;
-      color: var(--muted);
-      line-height: 1.45;
+      gap:6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(245,158,11,.18);
+      border: 1px solid rgba(245,158,11,.24);
     }
 
-    .fallback{
-      display:flex;
-      flex-direction:column;
-      gap: 10px;
+    /* quiz screen */
+    .qMath{
+      font-size: clamp(46px, 7vw, 74px);
+      font-weight: 1100;
+      letter-spacing: .4px;
+      text-shadow: 0 8px 20px rgba(0,0,0,.35);
+    }
+    .qYomi{
+      font-size: clamp(18px, 3.7vw, 30px);
+      font-weight: 1000;
+      color: #93c5fd;
+    }
+    .segmeter{
       width: min(620px, 100%);
-      margin-top: 8px;
-    }
-    .kbd{
-      display:grid;
-      grid-template-columns: repeat(5, minmax(0,1fr));
+      display:flex;
       gap: 8px;
+      align-items:center;
+      justify-content:center;
+      margin-top: 4px;
     }
-    .kbd .btn{
-      padding: 12px 10px;
-      border-radius: 14px;
+    .seg{
+      flex: 1 1 0;
+      height: 16px;
+      border-radius: 12px;
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.16);
+      overflow:hidden;
+      position:relative;
+    }
+    .seg.on::before{
+      content:"";
+      position:absolute; inset:0;
+      background: linear-gradient(90deg, rgba(34,197,94,.95), rgba(96,165,250,.95));
+    }
+
+    .controlBar{
+      width:min(720px, 100%);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      margin-top: 8px;
+      flex-wrap:wrap;
+    }
+    .scoreBits{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      flex-wrap:wrap;
+    }
+    .bit{
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.14);
+      font-weight: 1000;
+    }
+    .bit .badge{
+      width: 26px; height: 26px;
+      border-radius: 12px;
+      display:inline-flex; align-items:center; justify-content:center;
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.16);
+      font-size: 16px;
+      line-height: 1;
+    }
+    .bit.good .badge{ background: rgba(34,197,94,.18); border-color: rgba(34,197,94,.25); }
+    .bit.bad .badge{ background: rgba(239,68,68,.18); border-color: rgba(239,68,68,.25); }
+    .bit.q .badge{ background: rgba(96,165,250,.18); border-color: rgba(96,165,250,.25); }
+
+    .flashGood{ animation: flashGood .28s ease; }
+    .flashBad{ animation: flashBad .28s ease; }
+    @keyframes flashGood{
+      0%{ box-shadow: var(--shadow); border-color: rgba(34,197,94,.25); }
+      45%{ box-shadow: 0 0 0 4px rgba(34,197,94,.18), var(--shadow); border-color: rgba(34,197,94,.60); }
+      100%{ box-shadow: var(--shadow); border-color: rgba(255,255,255,.14); }
+    }
+    @keyframes flashBad{
+      0%{ box-shadow: var(--shadow); border-color: rgba(239,68,68,.25); }
+      45%{ box-shadow: 0 0 0 4px rgba(239,68,68,.18), var(--shadow); border-color: rgba(239,68,68,.60); }
+      100%{ box-shadow: var(--shadow); border-color: rgba(255,255,255,.14); }
+    }
+
+    /* result */
+    .resultTitle{
+      font-size: clamp(34px, 5vw, 52px);
+      font-weight: 1100;
+    }
+    .resultLine{
       font-size: 18px;
+      font-weight: 1000;
+      color: rgba(255,255,255,.88);
+    }
+
+    @media (max-height: 720px){
+      .mascotCard{ padding: 10px 12px; }
+      .face{ width:58px; height:58px; border-radius:20px; font-size: 34px; }
+      .panel{ gap: 10px; }
+      .courseRow{ padding: 10px; gap: 8px; }
+      .choiceBtn{ padding: 9px 0; }
     }
   </style>
 </head>
@@ -395,89 +407,80 @@
       <div class="brand">
         <div class="logo" aria-hidden="true"></div>
         <div class="brandText">
-          <b>九九を音でおぼえる</b>
-          <span>もんだいは みる＋きく｜こたえは こえで</span>
+          <b>クック先生の九九トレーニング</b>
+          <span>がくしゅうじゃない。ゲームだ。</span>
         </div>
       </div>
       <div style="display:flex; gap:10px; align-items:center;">
-        <button class="btn ghost" id="soundBtn" title="おとテスト">♪</button>
-        <button class="btn" id="resetBtn" title="スタートがめんへ">↺</button>
+        <button class="btn ghost" id="soundBtn" title="おとテスト"><span class="icon">♪</span></button>
+        <button class="btn ghost" id="resetBtn" title="リセット"><span class="icon">↺</span></button>
       </div>
     </header>
 
     <div class="main">
-      <div class="topRow hideOnStart">
-        <div class="card">
-          <div class="mascot">
-            <div class="face" id="face" aria-hidden="true">🤖</div>
-            <div class="bubble">
-              <div id="bubbleMain"><b>ゲームをえらんでね。</b></div>
-              <div id="bubbleSub" class="qSub" style="margin-top:6px;">（マイクをつかうよ。はじめる をおしてね）</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="statusLine">
-            <span class="pill" id="pillCourse">コース：—</span>
-            <span class="pill" id="pillQ">もんだい 0/0</span>
-            <span class="pill" id="pillScore">せいかい 0</span>
-            <span class="pill" id="pillState">まいく まち</span>
-          </div>
-          <div class="qSub" style="margin-top:10px;">
-            ・1もん 5びょう（びょうごとに ピッ）<br/>
-            ・せいかい：ピンポンピンポーン / まちがい：ブッブー
-          </div>
-          <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
-            <button class="btn" id="stopBtn">とめる</button>
+      <div class="card mascotCard">
+        <div class="mascot">
+          <div class="face" id="face" aria-hidden="true">🤖</div>
+          <div class="bubble">
+            <div id="bubbleMain"><b>ゲームをえらんでね！</b></div>
+            <div id="bubbleSub" style="margin-top:6px; color: rgba(255,255,255,.75); font-weight:900;">（マイクの きょかが ひつようだよ）</div>
           </div>
         </div>
       </div>
 
-      <div class="quiz card" id="quizCard">
-        <!-- Start Screen -->
+      <div class="card" id="mainCard">
+        <!-- START -->
         <div class="screen" id="screenStart">
           <div class="panel">
-            <h2>ゲームせんたく</h2>
+            <h2>ゲームせんたく <span class="tag" id="lockTag">えらぶと ロック</span></h2>
 
             <div class="courseRow" id="rowAsc">
               <div class="courseTitle">
                 <div>のぼり九九</div>
-                <span>1→9 のじゅんばん</span>
+                <small>1→9</small>
               </div>
-              <div class="choices choicesGrid" id="ascChoices"></div>
-              <div class="note">※（⭐）をえらぶと、だんが らんだむ（1〜9）ででるよ</div>
+              <div class="choicesGrid" id="ascChoices"></div>
+              <div class="toggleRow">
+                <div class="toggleStar">
+                  <button class="btn choiceBtn starBtn" id="ascStar">★</button>
+                  <div class="label">ばらばら</div>
+                </div>
+                <button class="btn big primary" id="beginBtnAsc"><span class="icon">▶</span> はじめる</button>
+              </div>
             </div>
 
             <div class="courseRow" id="rowDesc">
               <div class="courseTitle">
                 <div>くだり九九</div>
-                <span>9→1 のじゅんばん</span>
+                <small>9→1</small>
               </div>
-              <div class="choices choicesGrid" id="descChoices"></div>
-              <div class="note">※（⭐）をえらぶと、だんが らんだむ（1〜9）ででるよ</div>
+              <div class="choicesGrid" id="descChoices"></div>
+              <div class="toggleRow">
+                <div class="toggleStar">
+                  <button class="btn choiceBtn starBtn" id="descStar">★</button>
+                  <div class="label">ばらばら</div>
+                </div>
+                <button class="btn big primary" id="beginBtnDesc"><span class="icon">▶</span> はじめる</button>
+              </div>
             </div>
 
             <div class="courseRow" id="rowRand">
               <div class="courseTitle">
                 <div>ばらばら九九</div>
-                <span>だんは かんけいなく らんだむ</span>
+                <small>ランダム</small>
               </div>
-              <div class="choices choicesGridRand" id="randChoices"></div>
-              <div class="note">10=10もん / 20=20もん / 30=30もん / 40=40もん / 50=50もん</div>
-            </div>
-
-            <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:flex-end; margin-top:6px;">
-              <button class="btn danger" id="beginBtn" style="min-width: 160px;">はじめる</button>
+              <div class="choicesGridRand" id="randChoices"></div>
+              <div class="toggleRow" style="justify-content:flex-end;">
+                <button class="btn big primary" id="beginBtnRand"><span class="icon">▶</span> はじめる</button>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Quiz Screen -->
+        <!-- QUIZ -->
         <div class="screen hidden" id="screenQuiz">
           <div class="qMath" id="qMath">2 × 1</div>
           <div class="qYomi" id="qYomi">にいちが</div>
-          <div class="qSub">こたえを こえで いってね</div>
 
           <div class="segmeter" aria-label="countdown">
             <div class="seg on" id="seg1"></div>
@@ -487,661 +490,752 @@
             <div class="seg on" id="seg5"></div>
           </div>
 
-          <div class="fallback hidden" id="fallbackQuiz">
-            <div class="kbd" id="kbdQuiz"></div>
-            <div class="note">（テスト用：タップでもOK）</div>
+          <div class="controlBar">
+            <div class="scoreBits">
+              <div class="bit q"><span class="badge">🎮</span><span id="bitQ">0/0</span></div>
+              <div class="bit good"><span class="badge">⭕</span><span id="bitGood">0</span></div>
+              <div class="bit bad"><span class="badge">❌</span><span id="bitBad">0</span></div>
+            </div>
+
+            <button class="btn big primary" id="playStopBtn" aria-label="start/stop">
+              <span class="icon" id="playStopIcon">▶</span>
+            </button>
+          </div>
+
+          <div class="hidden" id="fallbackQuiz" style="width:min(720px,100%); margin-top:6px;">
+            <div style="display:grid; grid-template-columns: repeat(5, minmax(0,1fr)); gap:8px;" id="kbdQuiz"></div>
           </div>
         </div>
 
-        <!-- Result Screen -->
+        <!-- RESULT -->
         <div class="screen hidden" id="screenResult">
-          <div class="qMath">おつかれさま！</div>
-          <div class="qYomi" id="resultScore">せいかい 0 / 0</div>
-          <div class="qSub" id="resultMsg">また やってみよう！</div>
-          <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
-            <button class="btn primary" id="againBtn">もういちど</button>
-            <button class="btn" id="backBtn">スタートへ</button>
+          <div class="resultTitle">クリア！</div>
+          <div class="resultLine" id="resultLine">⭕ 0 / 0</div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-top:10px;">
+            <button class="btn big primary" id="againBtn"><span class="icon">▶</span> もういちど</button>
+            <button class="btn big" id="backBtn"><span class="icon">↩</span> えらびなおす</button>
           </div>
         </div>
-      </div>
-
-      <div class="bottomRow hideOnStart">
-        <div class="statusLine">
-          <span class="pill" id="pillLast">さいご：—</span>
-          <span class="pill" id="pillTime">のこり 5s</span>
-        </div>
-        <div class="qSub">※はじめては マイクの きょかが ひつようです</div>
       </div>
     </div>
   </div>
 
-  <script>
-    const $ = (id) => document.getElementById(id);
+<script>
+  const $ = (id)=>document.getElementById(id);
 
-    const face = $("face");
-    const bubbleMain = $("bubbleMain");
-    const bubbleSub = $("bubbleSub");
+  // UI
+  const face = $("face");
+  const bubbleMain = $("bubbleMain");
+  const bubbleSub  = $("bubbleSub");
 
-    const pillCourse = $("pillCourse");
-    const pillQ = $("pillQ");
-    const pillScore = $("pillScore");
-    const pillState = $("pillState");
-    const pillLast = $("pillLast");
-    const pillTime = $("pillTime");
+  const soundBtn = $("soundBtn");
+  const resetBtn = $("resetBtn");
 
-    const soundBtn = $("soundBtn");
-    const resetBtn = $("resetBtn");
-    const stopBtn = $("stopBtn");
+  const screenStart = $("screenStart");
+  const screenQuiz  = $("screenQuiz");
+  const screenResult= $("screenResult");
 
-    const screenStart = $("screenStart");
-    const screenQuiz = $("screenQuiz");
-    const screenResult = $("screenResult");
+  const rowAsc  = $("rowAsc");
+  const rowDesc = $("rowDesc");
+  const rowRand = $("rowRand");
 
-    const ascChoices = $("ascChoices");
-    const descChoices = $("descChoices");
-    const randChoices = $("randChoices");
-    const beginBtn = $("beginBtn");
+  const ascChoices = $("ascChoices");
+  const descChoices = $("descChoices");
+  const randChoices = $("randChoices");
 
-    const qMath = $("qMath");
-    const qYomi = $("qYomi");
-    const segEls = [$("seg1"),$("seg2"),$("seg3"),$("seg4"),$("seg5")];
+  const ascStar = $("ascStar");
+  const descStar = $("descStar");
 
-    const fallbackQuiz = $("fallbackQuiz");
-    const kbdQuiz = $("kbdQuiz");
+  const beginBtnAsc  = $("beginBtnAsc");
+  const beginBtnDesc = $("beginBtnDesc");
+  const beginBtnRand = $("beginBtnRand");
 
-    const resultScore = $("resultScore");
-    const resultMsg = $("resultMsg");
-    const againBtn = $("againBtn");
-    const backBtn = $("backBtn");
+  const qMath = $("qMath");
+  const qYomi = $("qYomi");
+  const segEls = [$("seg1"),$("seg2"),$("seg3"),$("seg4"),$("seg5")];
 
-    // -------- KUKU readings --------
-    const KUKU = {
-      1:{1:{chant:"いんいちが",answerYomi:"いち",ans:1},2:{chant:"いんにが",answerYomi:"に",ans:2},3:{chant:"いんさんが",answerYomi:"さん",ans:3},4:{chant:"いんしが",answerYomi:"し",ans:4},5:{chant:"いんごが",answerYomi:"ご",ans:5},6:{chant:"いんろくが",answerYomi:"ろく",ans:6},7:{chant:"いんしちが",answerYomi:"しち",ans:7},8:{chant:"いんはちが",answerYomi:"はち",ans:8},9:{chant:"いんくが",answerYomi:"く",ans:9}},
-      2:{1:{chant:"にいちが",answerYomi:"に",ans:2},2:{chant:"ににんが",answerYomi:"し",ans:4},3:{chant:"にさんが",answerYomi:"ろく",ans:6},4:{chant:"にしが",answerYomi:"はち",ans:8},5:{chant:"にご",answerYomi:"じゅう",ans:10},6:{chant:"にろく",answerYomi:"じゅうに",ans:12},7:{chant:"にしち",answerYomi:"じゅうし",ans:14},8:{chant:"にはち",answerYomi:"じゅうろく",ans:16},9:{chant:"にく",answerYomi:"じゅうはち",ans:18}},
-      3:{1:{chant:"さんいちが",answerYomi:"さん",ans:3},2:{chant:"さんにが",answerYomi:"ろく",ans:6},3:{chant:"さざんが",answerYomi:"く",ans:9},4:{chant:"さんし",answerYomi:"じゅうに",ans:12},5:{chant:"さんご",answerYomi:"じゅうご",ans:15},6:{chant:"さぶろく",answerYomi:"じゅうはち",ans:18},7:{chant:"さんしち",answerYomi:"にじゅういち",ans:21},8:{chant:"さんぱ",answerYomi:"にじゅうし",ans:24},9:{chant:"さんく",answerYomi:"にじゅうしち",ans:27}},
-      4:{1:{chant:"しいちが",answerYomi:"し",ans:4},2:{chant:"しにが",answerYomi:"はち",ans:8},3:{chant:"しさん",answerYomi:"じゅうに",ans:12},4:{chant:"しし",answerYomi:"じゅうろく",ans:16},5:{chant:"しご",answerYomi:"にじゅう",ans:20},6:{chant:"しろく",answerYomi:"にじゅうし",ans:24},7:{chant:"ししち",answerYomi:"にじゅうはち",ans:28},8:{chant:"しは",answerYomi:"さんじゅうに",ans:32},9:{chant:"しく",answerYomi:"さんじゅうろく",ans:36}},
-      5:{1:{chant:"ごいちが",answerYomi:"ご",ans:5},2:{chant:"ごに",answerYomi:"じゅう",ans:10},3:{chant:"ごさん",answerYomi:"じゅうご",ans:15},4:{chant:"ごし",answerYomi:"にじゅう",ans:20},5:{chant:"ごご",answerYomi:"にじゅうご",ans:25},6:{chant:"ごろく",answerYomi:"さんじゅう",ans:30},7:{chant:"ごしち",answerYomi:"さんじゅうご",ans:35},8:{chant:"ごは",answerYomi:"しじゅう",ans:40},9:{chant:"ごっく",answerYomi:"しじゅうご",ans:45}},
-      6:{1:{chant:"ろくいちが",answerYomi:"ろく",ans:6},2:{chant:"ろくに",answerYomi:"じゅうに",ans:12},3:{chant:"ろくさん",answerYomi:"じゅうはち",ans:18},4:{chant:"ろくし",answerYomi:"にじゅうし",ans:24},5:{chant:"ろくご",answerYomi:"さんじゅう",ans:30},6:{chant:"ろくろく",answerYomi:"さんじゅうろく",ans:36},7:{chant:"ろくしち",answerYomi:"しじゅうに",ans:42},8:{chant:"ろくは",answerYomi:"しじゅうはち",ans:48},9:{chant:"ろっく",answerYomi:"ごじゅうし",ans:54}},
-      7:{1:{chant:"しちいちが",answerYomi:"しち",ans:7},2:{chant:"しちに",answerYomi:"じゅうし",ans:14},3:{chant:"しちさん",answerYomi:"にじゅういち",ans:21},4:{chant:"しちし",answerYomi:"にじゅうはち",ans:28},5:{chant:"しちご",answerYomi:"さんじゅうご",ans:35},6:{chant:"しちろく",answerYomi:"しじゅうに",ans:42},7:{chant:"しちしち",answerYomi:"しじゅうく",ans:49},8:{chant:"しちは",answerYomi:"ごじゅうろく",ans:56},9:{chant:"しちく",answerYomi:"ろくじゅうさん",ans:63}},
-      8:{1:{chant:"はちいちが",answerYomi:"はち",ans:8},2:{chant:"はちに",answerYomi:"じゅうろく",ans:16},3:{chant:"はちさん",answerYomi:"にじゅうし",ans:24},4:{chant:"はちし",answerYomi:"さんじゅうに",ans:32},5:{chant:"はちご",answerYomi:"しじゅう",ans:40},6:{chant:"はちろく",answerYomi:"しじゅうはち",ans:48},7:{chant:"はちしち",answerYomi:"ごじゅうろく",ans:56},8:{chant:"はっぱ",answerYomi:"ろくじゅうし",ans:64},9:{chant:"はっく",answerYomi:"しちじゅうに",ans:72}},
-      9:{1:{chant:"くいちが",answerYomi:"く",ans:9},2:{chant:"くに",answerYomi:"じゅうはち",ans:18},3:{chant:"くさん",answerYomi:"にじゅうしち",ans:27},4:{chant:"くし",answerYomi:"さんじゅうろく",ans:36},5:{chant:"くご",answerYomi:"しじゅうご",ans:45},6:{chant:"くろく",answerYomi:"ごじゅうし",ans:54},7:{chant:"くしち",answerYomi:"ろくじゅうさん",ans:63},8:{chant:"くは",answerYomi:"しちじゅうに",ans:72},9:{chant:"くく",answerYomi:"はちじゅういち",ans:81}}
+  const bitQ = $("bitQ");
+  const bitGood = $("bitGood");
+  const bitBad = $("bitBad");
+
+  const playStopBtn = $("playStopBtn");
+  const playStopIcon = $("playStopIcon");
+
+  const fallbackQuiz = $("fallbackQuiz");
+  const kbdQuiz = $("kbdQuiz");
+
+  const resultLine = $("resultLine");
+  const againBtn = $("againBtn");
+  const backBtn = $("backBtn");
+
+  // Mascot
+  const FACES = ["🤖","🦊","🐸","🐼","🦉","🐙","🧠","🚀"];
+  function rand(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+  function setMascot(emoji, main, sub){
+    face.textContent = emoji;
+    bubbleMain.innerHTML = main;
+    bubbleSub.textContent = sub || "";
+  }
+
+  function setScreen(which){
+    document.body.setAttribute("data-mode", which);
+    screenStart.classList.toggle("hidden", which !== "start");
+    screenQuiz.classList.toggle("hidden", which !== "quiz");
+    screenResult.classList.toggle("hidden", which !== "result");
+  }
+
+  // ---------- Data (九九読み) ----------
+  const KUKU = {
+    1:{1:{chant:"いんいちが",ans:1},2:{chant:"いんにが",ans:2},3:{chant:"いんさんが",ans:3},4:{chant:"いんしが",ans:4},5:{chant:"いんごが",ans:5},6:{chant:"いんろくが",ans:6},7:{chant:"いんしちが",ans:7},8:{chant:"いんはちが",ans:8},9:{chant:"いんくが",ans:9}},
+    2:{1:{chant:"にいちが",ans:2},2:{chant:"ににんが",ans:4},3:{chant:"にさんが",ans:6},4:{chant:"にしが",ans:8},5:{chant:"にご",ans:10},6:{chant:"にろく",ans:12},7:{chant:"にしち",ans:14},8:{chant:"にはち",ans:16},9:{chant:"にく",ans:18}},
+    3:{1:{chant:"さんいちが",ans:3},2:{chant:"さんにが",ans:6},3:{chant:"さざんが",ans:9},4:{chant:"さんし",ans:12},5:{chant:"さんご",ans:15},6:{chant:"さぶろく",ans:18},7:{chant:"さんしち",ans:21},8:{chant:"さんぱ",ans:24},9:{chant:"さんく",ans:27}},
+    4:{1:{chant:"しいちが",ans:4},2:{chant:"しにが",ans:8},3:{chant:"しさん",ans:12},4:{chant:"しし",ans:16},5:{chant:"しご",ans:20},6:{chant:"しろく",ans:24},7:{chant:"ししち",ans:28},8:{chant:"しは",ans:32},9:{chant:"しく",ans:36}},
+    5:{1:{chant:"ごいちが",ans:5},2:{chant:"ごに",ans:10},3:{chant:"ごさん",ans:15},4:{chant:"ごし",ans:20},5:{chant:"ごご",ans:25},6:{chant:"ごろく",ans:30},7:{chant:"ごしち",ans:35},8:{chant:"ごは",ans:40},9:{chant:"ごっく",ans:45}},
+    6:{1:{chant:"ろくいちが",ans:6},2:{chant:"ろくに",ans:12},3:{chant:"ろくさん",ans:18},4:{chant:"ろくし",ans:24},5:{chant:"ろくご",ans:30},6:{chant:"ろくろく",ans:36},7:{chant:"ろくしち",ans:42},8:{chant:"ろくは",ans:48},9:{chant:"ろっく",ans:54}},
+    7:{1:{chant:"しちいちが",ans:7},2:{chant:"しちに",ans:14},3:{chant:"しちさん",ans:21},4:{chant:"しちし",ans:28},5:{chant:"しちご",ans:35},6:{chant:"しちろく",ans:42},7:{chant:"しちしち",ans:49},8:{chant:"しちは",ans:56},9:{chant:"しちく",ans:63}},
+    8:{1:{chant:"はちいちが",ans:8},2:{chant:"はちに",ans:16},3:{chant:"はちさん",ans:24},4:{chant:"はちし",ans:32},5:{chant:"はちご",ans:40},6:{chant:"はちろく",ans:48},7:{chant:"はちしち",ans:56},8:{chant:"はっぱ",ans:64},9:{chant:"はっく",ans:72}},
+    9:{1:{chant:"くいちが",ans:9},2:{chant:"くに",ans:18},3:{chant:"くさん",ans:27},4:{chant:"くし",ans:36},5:{chant:"くご",ans:45},6:{chant:"くろく",ans:54},7:{chant:"くしち",ans:63},8:{chant:"くは",ans:72},9:{chant:"くく",ans:81}}
+  };
+
+  // ---------- Audio: TTS ----------
+  function speak(text, {rate=1.20, pitch=1.05, volume=1.0} = {}){
+    if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) return false;
+    try{
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = "ja-JP";
+      u.rate = rate;
+      u.pitch = pitch;
+      u.volume = volume;
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(u);
+      return true;
+    }catch{
+      return false;
+    }
+  }
+
+  // ---------- Audio: SFX (WebAudio) ----------
+  let audioCtx = null;
+  function ensureAudioCtx(){
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === "suspended") audioCtx.resume().catch(()=>{});
+    return audioCtx;
+  }
+  function playTone(freq, duration, {volume=0.12, type="sine", attack=0.008, release=0.03} = {}){
+    if (!(window.AudioContext || window.webkitAudioContext)) return;
+    try{
+      const ctx = ensureAudioCtx();
+      const now = ctx.currentTime;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, now);
+      g.gain.linearRampToValueAtTime(volume, now + attack);
+      g.gain.setTargetAtTime(0.0001, now + duration, release);
+      g.connect(ctx.destination);
+
+      const o = ctx.createOscillator();
+      o.type = type;
+      o.frequency.setValueAtTime(freq, now);
+      o.connect(g);
+      o.start(now);
+      o.stop(now + duration + 0.08);
+    }catch{}
+  }
+  function playTick(){ playTone(1100, 0.05, {volume:0.04, type:"square", attack:0.002, release:0.02}); }
+  function playCorrect(){
+    try{
+      const ctx = ensureAudioCtx();
+      const now = ctx.currentTime;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, now);
+      g.gain.linearRampToValueAtTime(0.14, now + 0.01);
+      g.gain.setTargetAtTime(0.0001, now + 0.55, 0.06);
+      g.connect(ctx.destination);
+      const o = ctx.createOscillator();
+      o.type = "sine";
+      o.connect(g);
+      o.frequency.setValueAtTime(880, now);
+      o.frequency.setValueAtTime(988, now + 0.12);
+      o.frequency.setValueAtTime(784, now + 0.24);
+      o.frequency.setValueAtTime(1046, now + 0.34);
+      o.start(now);
+      o.stop(now + 0.70);
+    }catch{}
+  }
+  function playWrong(){
+    try{
+      const ctx = ensureAudioCtx();
+      const now = ctx.currentTime;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, now);
+      g.gain.linearRampToValueAtTime(0.13, now + 0.01);
+      g.gain.setTargetAtTime(0.0001, now + 0.42, 0.08);
+      g.connect(ctx.destination);
+      const o = ctx.createOscillator();
+      o.type = "sawtooth";
+      o.frequency.setValueAtTime(180, now);
+      o.frequency.linearRampToValueAtTime(140, now + 0.12);
+      o.frequency.setValueAtTime(160, now + 0.20);
+      o.frequency.linearRampToValueAtTime(150, now + 0.42);
+      o.connect(g);
+      o.start(now);
+      o.stop(now + 0.55);
+    }catch{}
+  }
+  function playCheerAndClap(){
+    try{
+      const ctx = ensureAudioCtx();
+      const now = ctx.currentTime;
+
+      const g1 = ctx.createGain();
+      g1.gain.setValueAtTime(0.0001, now);
+      g1.gain.linearRampToValueAtTime(0.18, now + 0.04);
+      g1.gain.setTargetAtTime(0.0001, now + 1.2, 0.20);
+      g1.connect(ctx.destination);
+
+      const o1 = ctx.createOscillator();
+      o1.type = "triangle";
+      o1.connect(g1);
+      o1.frequency.setValueAtTime(320, now);
+      o1.frequency.exponentialRampToValueAtTime(880, now + 1.0);
+      o1.start(now);
+      o1.stop(now + 1.4);
+
+      const dur = 1.6;
+      const sr = ctx.sampleRate;
+      const buf = ctx.createBuffer(1, Math.floor(sr*dur), sr);
+      const data = buf.getChannelData(0);
+      for (let i=0;i<data.length;i++){
+        data[i] = (Math.random()*2-1) * 0.55;
+      }
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+
+      const bp = ctx.createBiquadFilter();
+      bp.type = "bandpass";
+      bp.frequency.value = 1400;
+      bp.Q.value = 0.7;
+
+      const g2 = ctx.createGain();
+      g2.gain.setValueAtTime(0.0001, now);
+      g2.gain.linearRampToValueAtTime(0.14, now + 0.06);
+      g2.gain.setTargetAtTime(0.0001, now + dur, 0.12);
+
+      src.connect(bp);
+      bp.connect(g2);
+      g2.connect(ctx.destination);
+
+      const pulseCount = 10;
+      for (let p=0;p<pulseCount;p++){
+        const t = now + 0.15 + p*0.14 + Math.random()*0.03;
+        const v = 0.06 + Math.random()*0.06;
+        g2.gain.setValueAtTime(v, t);
+        g2.gain.setValueAtTime(0.0001, t + 0.03 + Math.random()*0.02);
+      }
+
+      src.start(now);
+      src.stop(now + dur);
+    }catch{}
+  }
+
+  // ---------- SpeechRecognition ----------
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let rec = null;
+  const recognitionOK = !!SpeechRecognition;
+
+  function setupRecognition(){
+    if (!recognitionOK) return;
+    rec = new SpeechRecognition();
+    rec.lang = "ja-JP";
+    rec.interimResults = false;
+    rec.maxAlternatives = 3;
+    rec.continuous = false;
+
+    rec.onresult = (ev) => {
+      if (!running || paused || lockedNext) return;
+      const res = ev.results?.[0];
+      if (!res) return;
+      const transcript = String(res[0].transcript || "").trim();
+      handleAnswer(transcript);
     };
+  }
+  function stopRecognition(){ try{ rec && rec.stop(); }catch{} }
+  function startRecognition(){ if (!recognitionOK) return; try{ rec.start(); }catch{} }
 
-    // -------- TTS --------
-    function speak(text, {rate=1.18, pitch=1.06, volume=1.0} = {}){
-      if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) return false;
-      try{
-        const u = new SpeechSynthesisUtterance(text);
-        u.lang = "ja-JP";
-        u.rate = rate;
-        u.pitch = pitch;
-        u.volume = volume;
-        window.speechSynthesis.cancel();
-        window.speechSynthesis.speak(u);
-        return true;
-      }catch{
-        return false;
-      }
-    }
+  // ---------- Answer parsing ----------
+  const DIGIT_MAP = {"ぜろ":0,"れい":0,"0":0,"〇":0,"零":0,"いち":1,"1":1,"一":1,"に":2,"2":2,"二":2,"さん":3,"3":3,"三":3,"し":4,"よん":4,"4":4,"四":4,"ご":5,"5":5,"五":5,"ろく":6,"6":6,"六":6,"なな":7,"しち":7,"7":7,"七":7,"はち":8,"8":8,"八":8,"きゅう":9,"く":9,"9":9,"九":9};
+  function normalizeKana(s){ return String(s||"").toLowerCase().replace(/\s+/g,"").replace(/ー/g,"").replace(/[，,。．.！!？?]/g,""); }
+  function parseNumberJapanese(input){
+    const raw = normalizeKana(input);
+    if (!raw) return null;
+    const m = raw.match(/(\d{1,3})/);
+    if (m){ const v = Number(m[1]); return Number.isFinite(v)? v : null; }
+    if (raw in DIGIT_MAP) return DIGIT_MAP[raw];
 
-    // -------- SFX (WebAudio) --------
-    let audioCtx = null;
-    function ensureAudioCtx(){
-      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      if (audioCtx.state === "suspended") audioCtx.resume().catch(()=>{});
-      return audioCtx;
-    }
-
-    function playTone(freq, duration, {volume=0.12, type="sine", attack=0.008, release=0.03} = {}){
-      if (!(window.AudioContext || window.webkitAudioContext)) return;
-      try{
-        const ctx = ensureAudioCtx();
-        const now = ctx.currentTime;
-
-        const g = ctx.createGain();
-        g.gain.setValueAtTime(0.0001, now);
-        g.gain.linearRampToValueAtTime(volume, now + attack);
-        g.gain.setTargetAtTime(0.0001, now + duration, release);
-        g.connect(ctx.destination);
-
-        const o = ctx.createOscillator();
-        o.type = type;
-        o.frequency.setValueAtTime(freq, now);
-        o.connect(g);
-        o.start(now);
-        o.stop(now + duration + 0.08);
-      }catch{}
-    }
-
-    function playTick(){
-      playTone(1100, 0.05, {volume:0.04, type:"square", attack:0.002, release:0.02});
-    }
-
-    function playCorrect(){
-      if (!(window.AudioContext || window.webkitAudioContext)) return;
-      try{
-        const ctx = ensureAudioCtx();
-        const now = ctx.currentTime;
-
-        const g = ctx.createGain();
-        g.gain.setValueAtTime(0.0001, now);
-        g.gain.linearRampToValueAtTime(0.14, now + 0.01);
-        g.gain.setTargetAtTime(0.0001, now + 0.55, 0.06);
-        g.connect(ctx.destination);
-
-        const o = ctx.createOscillator();
-        o.type = "sine";
-        o.connect(g);
-
-        o.frequency.setValueAtTime(880, now);
-        o.frequency.setValueAtTime(988, now + 0.12);
-        o.frequency.setValueAtTime(784, now + 0.24);
-        o.frequency.setValueAtTime(1046, now + 0.34);
-
-        o.start(now);
-        o.stop(now + 0.70);
-      }catch{}
-    }
-
-    function playWrong(){
-      if (!(window.AudioContext || window.webkitAudioContext)) return;
-      try{
-        const ctx = ensureAudioCtx();
-        const now = ctx.currentTime;
-
-        const g = ctx.createGain();
-        g.gain.setValueAtTime(0.0001, now);
-        g.gain.linearRampToValueAtTime(0.12, now + 0.01);
-        g.gain.setTargetAtTime(0.0001, now + 0.42, 0.08);
-        g.connect(ctx.destination);
-
-        const o = ctx.createOscillator();
-        o.type = "sawtooth";
-        o.frequency.setValueAtTime(180, now);
-        o.frequency.linearRampToValueAtTime(140, now + 0.12);
-        o.frequency.setValueAtTime(160, now + 0.20);
-        o.frequency.linearRampToValueAtTime(150, now + 0.42);
-
-        o.connect(g);
-        o.start(now);
-        o.stop(now + 0.55);
-      }catch{}
-    }
-
-    // -------- SpeechRecognition --------
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    let rec = null;
-    let recognitionOK = !!SpeechRecognition;
-
-    function setupRecognition(){
-      if (!recognitionOK) return;
-      rec = new SpeechRecognition();
-      rec.lang = "ja-JP";
-      rec.interimResults = false;
-      rec.maxAlternatives = 3;
-      rec.continuous = false;
-
-      rec.onstart = () => { pillState.textContent = "まいく ON"; };
-      rec.onend = () => { pillState.textContent = running ? "まいく きいてる…" : "まいく OFF"; };
-      rec.onerror = () => {
-        pillState.textContent = "まいく NG";
-        setMascot("😵‍💫", "<b>マイクが つかえないみたい…</b>", "きょか（許可）を かくにんしてね");
-      };
-      rec.onresult = (ev) => {
-        if (!running || lockedNext) return;
-        const res = ev.results?.[0];
-        if (!res) return;
-        const transcript = String(res[0].transcript || "").trim();
-        handleAnswer(transcript);
-      };
-    }
-
-    // -------- answer parsing --------
-    const DIGIT_MAP = {"ぜろ":0,"れい":0,"0":0,"〇":0,"零":0,"いち":1,"1":1,"一":1,"に":2,"2":2,"二":2,"さん":3,"3":3,"三":3,"し":4,"よん":4,"4":4,"四":4,"ご":5,"5":5,"五":5,"ろく":6,"6":6,"六":6,"なな":7,"しち":7,"7":7,"七":7,"はち":8,"8":8,"八":8,"きゅう":9,"く":9,"9":9,"九":9};
-    function normalizeKana(s){ return String(s||"").toLowerCase().replace(/\s+/g,"").replace(/ー/g,"").replace(/[，,。．.！!？?]/g,""); }
-    function parseNumberJapanese(input){
-      const raw = normalizeKana(input);
-      if (!raw) return null;
-      const m = raw.match(/(\d{1,3})/);
-      if (m){ const v = Number(m[1]); return Number.isFinite(v)? v : null; }
-      if (raw in DIGIT_MAP) return DIGIT_MAP[raw];
-
-      const tensWords = [
-        {k:["じゅう","十"], v:10},
-        {k:["にじゅう","二十"], v:20},
-        {k:["さんじゅう","三十"], v:30},
-        {k:["よんじゅう","しじゅう","四十"], v:40},
-        {k:["ごじゅう","五十"], v:50},
-        {k:["ろくじゅう","六十"], v:60},
-        {k:["ななじゅう","しちじゅう","七十"], v:70},
-        {k:["はちじゅう","八十"], v:80},
-        {k:["きゅうじゅう","くじゅう","九十"], v:90},
-      ];
-      for (const t of tensWords){
-        for (const kk of t.k){
-          if (raw === kk) return t.v;
-          if (raw.startsWith(kk)){
-            const rest = raw.slice(kk.length);
-            if (!rest) return t.v;
-            if (rest in DIGIT_MAP) return t.v + DIGIT_MAP[rest];
-          }
+    const tensWords = [
+      {k:["じゅう","十"], v:10},
+      {k:["にじゅう","二十"], v:20},
+      {k:["さんじゅう","三十"], v:30},
+      {k:["よんじゅう","しじゅう","四十"], v:40},
+      {k:["ごじゅう","五十"], v:50},
+      {k:["ろくじゅう","六十"], v:60},
+      {k:["ななじゅう","しちじゅう","七十"], v:70},
+      {k:["はちじゅう","八十"], v:80},
+      {k:["きゅうじゅう","くじゅう","九十"], v:90},
+    ];
+    for (const t of tensWords){
+      for (const kk of t.k){
+        if (raw === kk) return t.v;
+        if (raw.startsWith(kk)){
+          const rest = raw.slice(kk.length);
+          if (!rest) return t.v;
+          if (rest in DIGIT_MAP) return t.v + DIGIT_MAP[rest];
         }
       }
-      return null;
     }
+    return null;
+  }
 
-    // -------- game state --------
-    const LIMIT_MS = 5000;
-    const LIMIT_SEC = 5;
+  // ---------- Game selection state ----------
+  const COURSE = { ASC:"asc", DESC:"desc", RAND:"rand" };
 
-    let running = false;
-    let idx = 0;
-    let score = 0;
-    let current = null;
+  let activeCourse = null; // locked once set
+  let ascDans = new Set();  // selected multiple
+  let descDans = new Set();
+  let randCount = 10;
+  let ascStarOn = false;
+  let descStarOn = false;
 
-    let tickTimer = null;
-    let tStart = 0;
-    let lastTranscript = "";
-    let lockedNext = false;
-    let lastShownSec = 5;
-
-    let questionPool = [];
-    let totalQuestions = 0;
-
-    const FACES = ["🤖","🦊","🐸","🐼","🦉","🐙","🧠","🚀"];
-    function rand(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
-
-    function setMascot(emoji, main, sub){
-      face.textContent = emoji;
-      bubbleMain.innerHTML = main;
-      bubbleSub.textContent = sub || "";
+  function lockToCourse(course){
+    if (activeCourse && activeCourse !== course) return;
+    if (!activeCourse){
+      activeCourse = course;
+      updateLockUI();
     }
+  }
+  function updateLockUI(){
+    rowAsc.classList.toggle("locked", activeCourse && activeCourse !== COURSE.ASC);
+    rowDesc.classList.toggle("locked", activeCourse && activeCourse !== COURSE.DESC);
+    rowRand.classList.toggle("locked", activeCourse && activeCourse !== COURSE.RAND);
 
-    function setScreen(which){
-      document.body.setAttribute("data-mode", which);
-      screenStart.classList.toggle("hidden", which !== "start");
-      screenQuiz.classList.toggle("hidden", which !== "quiz");
-      screenResult.classList.toggle("hidden", which !== "result");
-    }
-
-    function updatePills(){
-      pillQ.textContent = `もんだい ${Math.min(idx, totalQuestions)}/${totalQuestions}`;
-      pillScore.textContent = `せいかい ${score}`;
-      pillLast.textContent = lastTranscript ? `さいご：${lastTranscript}` : "さいご：—";
-    }
-
-    function setTimeLeftSec(sec){
-      const s = Math.max(0, Math.min(LIMIT_SEC, sec));
-      pillTime.textContent = `のこり ${s}s`;
-    }
-
-    function setSegsOn(n){
-      for (let i=0;i<segEls.length;i++){
-        segEls[i].classList.toggle("on", i < n);
+    setDisabledRow(rowAsc, activeCourse && activeCourse !== COURSE.ASC);
+    setDisabledRow(rowDesc, activeCourse && activeCourse !== COURSE.DESC);
+    setDisabledRow(rowRand, activeCourse && activeCourse !== COURSE.RAND);
+  }
+  function setDisabledRow(rowEl, disabled){
+    rowEl.querySelectorAll("button").forEach(b=>{
+      if (disabled){
+        b.disabled = true;
+        b.classList.add("disabled");
+      }else{
+        b.disabled = false;
+        b.classList.remove("disabled");
       }
-    }
+    });
+  }
 
-    function stopRecognition(){ try{ rec && rec.stop(); }catch{} }
-    function startRecognition(){ if (!recognitionOK) return; try{ rec.start(); }catch{} }
-
-    function speakQuestion(q){
-      speak(`${q.chant}。`, {rate:1.20, pitch:1.06});
-    }
-
-    function startTimer(){
-      tStart = performance.now();
-      lastShownSec = LIMIT_SEC;
-      setTimeLeftSec(LIMIT_SEC);
-      setSegsOn(LIMIT_SEC);
-
-      if (tickTimer) clearInterval(tickTimer);
-      tickTimer = setInterval(()=>{
-        if (!running || lockedNext) return;
-        const now = performance.now();
-        const elapsed = now - tStart;
-        const left = LIMIT_MS - elapsed;
-
-        const secLeft = Math.max(0, Math.ceil(left / 1000));
-        if (secLeft !== lastShownSec){
-          if (secLeft < lastShownSec) playTick();
-          lastShownSec = secLeft;
-          setTimeLeftSec(secLeft);
-          setSegsOn(secLeft);
-        }
-        if (left <= 0) timeUp();
-      }, 50);
-    }
-
-    function flash(cardEl, good){
-      cardEl.classList.remove("flashGood","flashBad");
-      void cardEl.offsetWidth;
-      cardEl.classList.add(good ? "flashGood" : "flashBad");
-    }
-
-    function timeUp(){
-      if (lockedNext) return;
-      lastTranscript = "（じかんぎれ）";
-      updatePills();
-      setMascot("⏱️", "<b>じかんぎれ！</b>", "つぎ いこう！");
-      flash($("quizCard"), false);
-      lockAndAdvance(260);
-    }
-
-    function nextQuestion(){
-      lockedNext = false;
-      stopRecognition();
-
-      if (idx >= totalQuestions){
-        finish();
-        return;
-      }
-
-      current = questionPool[idx];
-      idx += 1;
-
-      qMath.textContent = `${current.a} × ${current.b}`;
-      qYomi.textContent = current.chant;
-
-      updatePills();
-      setScreen("quiz");
-      setMascot(rand(FACES), "<b>いくよ！</b> 5びょう いないに こたえてね。", "");
-
-      speakQuestion(current);
-      startTimer();
-
-      lastTranscript = "";
-      updatePills();
-
-      if (recognitionOK){
-        setTimeout(()=>{ if (running && !lockedNext) startRecognition(); }, 260);
-      }
-    }
-
-    function lockAndAdvance(delayMs=260){
-      lockedNext = true;
-      stopRecognition();
-      if (tickTimer) clearInterval(tickTimer);
-      setTimeout(()=>{ if (running) nextQuestion(); }, delayMs);
-    }
-
-    function handleAnswer(transcript){
-      if (lockedNext) return;
-      lastTranscript = transcript;
-      updatePills();
-
-      const n = parseNumberJapanese(transcript);
-      const ok = (n !== null && current && n === current.ans);
-
-      if (ok){
-        score += 1;
-        updatePills();
-        setMascot(rand(FACES), "<b>せいかい！</b>", "");
-        flash($("quizCard"), true);
-        playCorrect();
-        lockAndAdvance(300);
-      } else {
-        setMascot("😵‍💫", "<b>まちがい！</b>", "");
-        flash($("quizCard"), false);
-        playWrong();
-        lockAndAdvance(360);
-      }
-    }
-
-    function finish(){
-      running = false;
-      stopRecognition();
-      if (tickTimer) clearInterval(tickTimer);
-
-      setScreen("result");
-      resultScore.textContent = `せいかい ${score} / ${totalQuestions}`;
-
-      let msg = "また やってみよう！";
-      if (score === totalQuestions) msg = "ぜんぶ せいかい！ すごい！";
-      else if (score >= Math.floor(totalQuestions*0.8)) msg = "かなり できた！ いいね！";
-      else if (score >= Math.floor(totalQuestions*0.5)) msg = "いい ちょうし！ つづけよう！";
-      else msg = "だいじょうぶ。くりかえしで おぼえるよ！";
-
-      resultMsg.textContent = msg;
-      setMascot(rand(FACES), "<b>おつかれさま！</b>", msg);
-
-      pillState.textContent = "おわり";
-      setTimeLeftSec(0);
-      setSegsOn(0);
-    }
-
-    // -------- course selection --------
-    const COURSE = { ASC: "asc", DESC: "desc", RAND: "rand" };
-
-    let selectedCourse = COURSE.RAND;
-    let selectedDan = "rand";     
-    let selectedRandCount = 10;   
-
-    function labelCourse(){
-      if (selectedCourse === COURSE.ASC) return `のぼり九九：${selectedDan === "rand" ? "※" : selectedDan}`;
-      if (selectedCourse === COURSE.DESC) return `くだり九九：${selectedDan === "rand" ? "※" : selectedDan}`;
-      return `ばらばら九九：${selectedRandCount}`;
-    }
-
-    function setCourse(course){ selectedCourse = course; updateCourseUI(); }
-    function setDan(d){ selectedDan = d; updateCourseUI(); }
-    function setRandCount(n){ selectedRandCount = n; updateCourseUI(); }
-
-    function clearSel(container){
-      [...container.querySelectorAll("button")].forEach(b=>b.classList.remove("sel"));
-    }
-
-    function updateCourseUI(){
-      clearSel(ascChoices);
-      clearSel(descChoices);
-      clearSel(randChoices);
-
-      if (selectedCourse === COURSE.ASC){
-        const btn = $(`asc-${selectedDan}`);
-        if (btn) btn.classList.add("sel");
-      } else if (selectedCourse === COURSE.DESC){
-        const btn = $(`desc-${selectedDan}`);
-        if (btn) btn.classList.add("sel");
-      } else {
-        const btn = $(`rand-${selectedRandCount}`);
-        if (btn) btn.classList.add("sel");
-      }
-
-      pillCourse.textContent = `コース：${labelCourse()}`;
-    }
-
-    function shuffle(arr){
-      for (let i=arr.length-1;i>0;i--){
-        const j = Math.floor(Math.random()*(i+1));
-        [arr[i],arr[j]] = [arr[j],arr[i]];
-      }
-      return arr;
-    }
-
-    function makePoolForAscDesc(isAsc, danPick){
-      const dans = (danPick === "rand") ? [1,2,3,4,5,6,7,8,9] : [Number(danPick)];
-      const bs = isAsc ? [1,2,3,4,5,6,7,8,9] : [9,8,7,6,5,4,3,2,1];
-
-      const pool = [];
-      for (const a of dans){
-        for (const b of bs){
-          const it = KUKU[a][b];
-          pool.push({a,b, chant: it.chant, answerYomi: it.answerYomi, ans: it.ans});
-        }
-      }
-      if (danPick === "rand") shuffle(pool);
-      return pool;
-    }
-
-    function makePoolForRandom(count){
-      const all = [];
-      for (let a=1;a<=9;a++){
-        for (let b=1;b<=9;b++){
-          const it = KUKU[a][b];
-          all.push({a,b, chant: it.chant, answerYomi: it.answerYomi, ans: it.ans});
-        }
-      }
-      shuffle(all);
-      return all.slice(0, count);
-    }
-
-    function buildPoolFromSelection(){
-      if (selectedCourse === COURSE.ASC){
-        questionPool = makePoolForAscDesc(true, selectedDan);
-      } else if (selectedCourse === COURSE.DESC){
-        questionPool = makePoolForAscDesc(false, selectedDan);
-      } else {
-        questionPool = makePoolForRandom(selectedRandCount);
-      }
-      totalQuestions = questionPool.length;
-    }
-
-    function resetToStart(){
-      running = false;
-      idx = 0;
-      score = 0;
-      current = null;
-      lastTranscript = "";
-      lockedNext = false;
-
-      stopRecognition();
-      if (tickTimer) clearInterval(tickTimer);
-
-      setTimeLeftSec(LIMIT_SEC);
-      setSegsOn(LIMIT_SEC);
-
-      pillState.textContent = recognitionOK ? "まいく まち" : "まいく NG";
-      setMascot("🤖", "<b>ゲームをえらんでね。</b>", "（マイクをつかうよ。はじめる をおしてね）");
-      setScreen("start");
-
-      buildPoolFromSelection();
-      updatePills();
-      updateCourseUI();
-
-      if (!recognitionOK){
-        fallbackQuiz.classList.remove("hidden");
-      } else {
-        fallbackQuiz.classList.add("hidden");
-      }
-    }
-
-    function startSession(){
-      if (running) return;
-
-      ensureAudioCtx();
-      buildPoolFromSelection();
-
-      running = true;
-      idx = 0;
-      score = 0;
-      lastTranscript = "";
-      lockedNext = false;
-
-      updatePills();
-      pillState.textContent = recognitionOK ? "まいく きょか" : "まいく NG";
-
-      if (!recognitionOK){
-        fallbackQuiz.classList.remove("hidden");
-        setMascot("😵‍💫", "<b>音声にんしきが つかえない…</b>", "テストように タップで こたえよう");
-      } else {
-        fallbackQuiz.classList.add("hidden");
-        setMascot(rand(FACES), "<b>スタート！</b>", "");
-      }
-
-      setTimeout(()=>{ if (running) nextQuestion(); }, 350);
-    }
-
-    function stopSession(){
-      running = false;
-      stopRecognition();
-      if (tickTimer) clearInterval(tickTimer);
-      pillState.textContent = "とめた";
-      resetToStart();
-    }
-
-    // -------- keypad fallback (test only) --------
-    function renderKeypad(container){
-      const nums = [0,1,2,3,4,5,6,7,8,9];
-      container.innerHTML = "";
-      for (const n of nums){
-        const b = document.createElement("button");
-        b.className = "btn";
-        b.textContent = String(n);
-        b.addEventListener("click", ()=>{
-          if (!running || lockedNext || !current) return;
-          handleAnswer(String(n));
-        });
-        container.appendChild(b);
-      }
-    }
-    renderKeypad(kbdQuiz);
-
-    // -------- build course UI buttons --------
-    function makeChoiceButton(id, text, onClick){
+  function makeDanButtons(container, setRef, course){
+    container.innerHTML = "";
+    for (let i=1;i<=9;i++){
       const b = document.createElement("button");
-      b.id = id;
       b.className = "btn choiceBtn";
-      b.textContent = text;
-      b.addEventListener("click", onClick);
-      return b;
+      b.textContent = String(i);
+      b.addEventListener("click", ()=>{
+        lockToCourse(course);
+        if (activeCourse !== course) return;
+        if (setRef.has(i)) setRef.delete(i);
+        else setRef.add(i);
+        b.classList.toggle("on", setRef.has(i));
+      });
+      container.appendChild(b);
     }
+  }
 
-    function buildDanChoices(container, prefix, course){
-      container.innerHTML = "";
-      for (let i=1;i<=9;i++){
-        container.appendChild(makeChoiceButton(`${prefix}-${i}`, String(i), ()=>{
-          setCourse(course);
-          setDan(String(i));
-        }));
+  function makeRandButtons(container){
+    container.innerHTML = "";
+    [10,20,30,40,50].forEach(n=>{
+      const b = document.createElement("button");
+      b.className = "btn choiceBtn";
+      b.textContent = String(n);
+      b.addEventListener("click", ()=>{
+        lockToCourse(COURSE.RAND);
+        if (activeCourse !== COURSE.RAND) return;
+        randCount = n;
+        [...container.children].forEach(x=>x.classList.remove("on"));
+        b.classList.add("on");
+      });
+      container.appendChild(b);
+    });
+    container.children[0].classList.add("on");
+  }
+
+  function updateStarUI(){
+    ascStar.classList.toggle("on", ascStarOn);
+    descStar.classList.toggle("on", descStarOn);
+  }
+
+  ascStar.addEventListener("click", ()=>{
+    lockToCourse(COURSE.ASC);
+    if (activeCourse !== COURSE.ASC) return;
+    ascStarOn = !ascStarOn;
+    updateStarUI();
+  });
+  descStar.addEventListener("click", ()=>{
+    lockToCourse(COURSE.DESC);
+    if (activeCourse !== COURSE.DESC) return;
+    descStarOn = !descStarOn;
+    updateStarUI();
+  });
+
+  // ---------- Quiz state ----------
+  const LIMIT_MS = 5000;
+  const LIMIT_SEC = 5;
+
+  let running = false;     // session active
+  let paused  = true;      // in quiz screen, play/stop toggles
+  let lockedNext = false;
+
+  let questionPool = [];
+  let totalQuestions = 0;
+  let idx = 0;
+  let good = 0;
+  let bad  = 0;
+  let current = null;
+
+  let tStart = 0;
+  let tickTimer = null;
+  let lastShownSec = 5;
+
+  function setSegsOn(n){
+    for (let i=0;i<segEls.length;i++){
+      segEls[i].classList.toggle("on", i < n);
+    }
+  }
+
+  function flash(goodFlag){
+    const card = $("mainCard");
+    card.classList.remove("flashGood","flashBad");
+    void card.offsetWidth;
+    card.classList.add(goodFlag ? "flashGood" : "flashBad");
+  }
+
+  function updateScoreUI(){
+    bitQ.textContent = `${Math.min(idx, totalQuestions)}/${totalQuestions}`;
+    bitGood.textContent = String(good);
+    bitBad.textContent = String(bad);
+  }
+
+  function speakQuestion(q){
+    speak(`${q.chant}。`, {rate:1.22, pitch:1.05});
+  }
+
+  function shuffle(arr){
+    for (let i=arr.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [arr[i],arr[j]] = [arr[j],arr[i]];
+    }
+    return arr;
+  }
+
+  function buildPoolAscDesc(course){
+    const isAsc = (course === COURSE.ASC);
+    const dans = isAsc ? [...ascDans] : [...descDans];
+    if (dans.length === 0) return [];
+    dans.sort((a,b)=>a-b);
+    const bOrder = isAsc ? [1,2,3,4,5,6,7,8,9] : [9,8,7,6,5,4,3,2,1];
+
+    const pool = [];
+    for (const a of dans){
+      for (const b of bOrder){
+        const it = KUKU[a][b];
+        pool.push({a,b,chant: it.chant, ans: it.ans});
       }
-      const starBtn = document.createElement("button");
-      starBtn.id = `${prefix}-rand`;
-      starBtn.className = "btn choiceBtn span2";
-      starBtn.innerHTML = '※ <span class="star">⭐</span>';
-      starBtn.addEventListener("click", ()=>{
-        setCourse(course);
-        setDan("rand");
-      });
-      container.appendChild(starBtn);
     }
 
-    function buildRandChoices(container){
-      container.innerHTML = "";
-      [10,20,30,40,50].forEach(n=>{
-        container.appendChild(makeChoiceButton(`rand-${n}`, String(n), ()=>{
-          setCourse(COURSE.RAND);
-          setRandCount(n);
-        }));
-      });
+    const starOn = isAsc ? ascStarOn : descStarOn;
+    if (starOn) shuffle(pool);
+    return pool;
+  }
+
+  function buildPoolRand(){
+    const all = [];
+    for (let a=1;a<=9;a++){
+      for (let b=1;b<=9;b++){
+        all.push({a,b, chant: KUKU[a][b].chant, ans: KUKU[a][b].ans});
+      }
+    }
+    shuffle(all);
+    return all.slice(0, randCount);
+  }
+
+  function startGame(course){
+    ensureAudioCtx();
+    stopRecognition();
+    window.speechSynthesis && window.speechSynthesis.cancel();
+
+    activeCourse = course;
+    updateLockUI();
+
+    if (course === COURSE.RAND) questionPool = buildPoolRand();
+    else questionPool = buildPoolAscDesc(course);
+
+    if (!questionPool.length){
+      setMascot("😅", "<b>だんを えらんでね！</b>", "（1〜9 を ひとついじょう）");
+      return;
     }
 
-    buildDanChoices(ascChoices, "asc", COURSE.ASC);
-    buildDanChoices(descChoices, "desc", COURSE.DESC);
-    buildRandChoices(randChoices);
+    totalQuestions = questionPool.length;
+    idx = 0;
+    good = 0;
+    bad  = 0;
+    current = null;
 
-    // -------- events --------
-    beginBtn.addEventListener("click", ()=>{
-      ensureAudioCtx();
-      startSession();
-    });
+    running = true;
+    paused = false;
+    lockedNext = false;
 
-    stopBtn.addEventListener("click", stopSession);
-    resetBtn.addEventListener("click", resetToStart);
+    setMascot("🤖", "<b>クック先生：いくよ！</b>", "5びょう いないに こたえてね");
+    setScreen("quiz");
+    updateScoreUI();
+    setPlayStopIcon();
+    nextQuestion();
+  }
 
-    soundBtn.addEventListener("click", ()=>{
-      ensureAudioCtx();
-      playTick();
-      setTimeout(()=>playCorrect(), 120);
-      setMascot(rand(FACES), "<b>おと テスト！</b>", "きこえた？");
-    });
+  function setPlayStopIcon(){
+    playStopIcon.textContent = paused ? "▶" : "⏸";
+  }
 
-    againBtn.addEventListener("click", ()=>{ resetToStart(); startSession(); });
-    backBtn.addEventListener("click", resetToStart);
+  function stopTimers(){
+    if (tickTimer) clearInterval(tickTimer);
+    tickTimer = null;
+  }
 
-    // -------- init --------
-    setupRecognition();
-    setCourse(COURSE.RAND);
-    setRandCount(10);
-    resetToStart();
-  </script>
+  function pauseGame(){
+    if (!running) return;
+    paused = true;
+    lockedNext = true;
+    stopRecognition();
+    stopTimers();
+    window.speechSynthesis && window.speechSynthesis.cancel();
+    setPlayStopIcon();
+    setMascot(rand(FACES), "<b>ストップ！</b>", "▶ で さいかい");
+  }
+
+  function resumeGame(){
+    if (!running) return;
+    paused = false;
+    lockedNext = false;
+    setPlayStopIcon();
+    setMascot("🤖", "<b>さいかい！</b>", "");
+    startTimer();
+    if (recognitionOK){
+      setTimeout(()=>{ if (running && !paused && !lockedNext) startRecognition(); }, 180);
+    } else {
+      fallbackQuiz.classList.remove("hidden");
+    }
+  }
+
+  playStopBtn.addEventListener("click", ()=>{
+    ensureAudioCtx();
+    if (!running){
+      setMascot("🤖", "<b>ゲームを えらんでね！</b>", "");
+      return;
+    }
+    if (paused) resumeGame();
+    else pauseGame();
+  });
+
+  function startTimer(){
+    stopTimers();
+    tStart = performance.now();
+    lastShownSec = LIMIT_SEC;
+    setSegsOn(LIMIT_SEC);
+
+    tickTimer = setInterval(()=>{
+      if (!running || paused) return;
+      const now = performance.now();
+      const left = LIMIT_MS - (now - tStart);
+      const secLeft = Math.max(0, Math.ceil(left/1000));
+      if (secLeft !== lastShownSec){
+        if (secLeft < lastShownSec) playTick();
+        lastShownSec = secLeft;
+        setSegsOn(secLeft);
+      }
+      if (left <= 0) timeUp();
+    }, 50);
+  }
+
+  function timeUp(){
+    if (!running || paused || lockedNext) return;
+    bad += 1;
+    updateScoreUI();
+    setMascot("😵‍💫", "<b>ブッブー！</b>", "");
+    flash(false);
+    playWrong();
+    lockAndAdvance(360);
+  }
+
+  function nextQuestion(){
+    if (!running) return;
+    stopRecognition();
+    window.speechSynthesis && window.speechSynthesis.cancel();
+
+    if (idx >= totalQuestions){
+      finish();
+      return;
+    }
+
+    current = questionPool[idx];
+    idx += 1;
+
+    qMath.textContent = `${current.a} × ${current.b}`;
+    qYomi.textContent = current.chant;
+    updateScoreUI();
+
+    lockedNext = false;
+    paused = false;
+    setPlayStopIcon();
+
+    speakQuestion(current);
+    startTimer();
+
+    if (recognitionOK){
+      setTimeout(()=>{ if (running && !paused && !lockedNext) startRecognition(); }, 240);
+    } else {
+      fallbackQuiz.classList.remove("hidden");
+    }
+  }
+
+  function lockAndAdvance(delayMs){
+    lockedNext = true;
+    stopRecognition();
+    stopTimers();
+    setTimeout(()=>{ if (running && !paused) nextQuestion(); }, delayMs);
+  }
+
+  function handleAnswer(transcript){
+    if (!running || paused || lockedNext) return;
+    const n = parseNumberJapanese(transcript);
+    const ok = (n !== null && current && n === current.ans);
+
+    if (ok){
+      good += 1;
+      updateScoreUI();
+      setMascot(rand(FACES), "<b>いいね！</b>", "");
+      flash(true);
+      playCorrect();
+      lockAndAdvance(300);
+    }else{
+      bad += 1;
+      updateScoreUI();
+      setMascot("😵‍💫", "<b>ブッブー！</b>", "");
+      flash(false);
+      playWrong();
+      lockAndAdvance(360);
+    }
+  }
+
+  function finish(){
+    running = false;
+    paused = true;
+    lockedNext = true;
+    stopRecognition();
+    stopTimers();
+    window.speechSynthesis && window.speechSynthesis.cancel();
+
+    playCheerAndClap();
+    resultLine.textContent = `⭕ ${good} / ${totalQuestions}　（❌ ${bad}）`;
+    setMascot("🎉", "<b>クリア！</b>", "やったね！");
+    setScreen("result");
+  }
+
+  beginBtnAsc.addEventListener("click", ()=>{
+    lockToCourse(COURSE.ASC);
+    if (activeCourse !== COURSE.ASC) return;
+    startGame(COURSE.ASC);
+  });
+  beginBtnDesc.addEventListener("click", ()=>{
+    lockToCourse(COURSE.DESC);
+    if (activeCourse !== COURSE.DESC) return;
+    startGame(COURSE.DESC);
+  });
+  beginBtnRand.addEventListener("click", ()=>{
+    lockToCourse(COURSE.RAND);
+    if (activeCourse !== COURSE.RAND) return;
+    startGame(COURSE.RAND);
+  });
+
+  againBtn.addEventListener("click", ()=>{
+    if (!activeCourse) { setScreen("start"); return; }
+    startGame(activeCourse);
+  });
+  backBtn.addEventListener("click", ()=>{
+    resetAll();
+  });
+
+  soundBtn.addEventListener("click", ()=>{
+    ensureAudioCtx();
+    playTick();
+    setTimeout(()=>playCorrect(), 140);
+    setTimeout(()=>playWrong(), 520);
+    setMascot(rand(FACES), "<b>おと テスト！</b>", "きこえた？");
+  });
+
+  resetBtn.addEventListener("click", ()=>{
+    resetAll();
+  });
+
+  function resetAll(){
+    running = false;
+    paused = true;
+    lockedNext = true;
+    stopRecognition();
+    stopTimers();
+    window.speechSynthesis && window.speechSynthesis.cancel();
+
+    activeCourse = null;
+    ascDans = new Set();
+    descDans = new Set();
+    randCount = 10;
+    ascStarOn = false;
+    descStarOn = false;
+
+    [...ascChoices.children].forEach(b=>b.classList.remove("on"));
+    [...descChoices.children].forEach(b=>b.classList.remove("on"));
+    [...randChoices.children].forEach((b,i)=>b.classList.toggle("on", i===0));
+    updateStarUI();
+    updateLockUI();
+
+    setMascot("🤖", "<b>ゲームをえらんでね！</b>", "（マイクの きょかが ひつようだよ）");
+    setSegsOn(LIMIT_SEC);
+    setScreen("start");
+  }
+
+  function renderKeypad(){
+    kbdQuiz.innerHTML = "";
+    for (let n=0; n<=9; n++){
+      const b = document.createElement("button");
+      b.className = "btn";
+      b.textContent = String(n);
+      b.addEventListener("click", ()=>{
+        if (!running || paused || lockedNext) return;
+        handleAnswer(String(n));
+      });
+      kbdQuiz.appendChild(b);
+    }
+  }
+  renderKeypad();
+
+  makeDanButtons(ascChoices, ascDans, COURSE.ASC);
+  makeDanButtons(descChoices, descDans, COURSE.DESC);
+  makeRandButtons(randChoices);
+  updateStarUI();
+  updateLockUI();
+
+  setupRecognition();
+  if (!recognitionOK){
+    fallbackQuiz.classList.remove("hidden");
+    setMascot("😵‍💫", "<b>音声にんしきが つかえない…</b>", "（テストは タップでOK）");
+  }
+</script>
 </body>
 </html>

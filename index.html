@@ -1,0 +1,829 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1220" />
+  <title>九九を音でおぼえる</title>
+  <style>
+    :root{
+      --bg:#0b1220;
+      --card: rgba(255,255,255,.06);
+      --line: rgba(255,255,255,.12);
+      --text:#e8eefc;
+      --muted:#a8b3d4;
+      --accent:#7dd3fc;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --r: 22px;
+    }
+    *{ box-sizing:border-box; }
+    html, body { height: 100%; }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, "Hiragino Sans", "Noto Sans JP", sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(1000px 700px at 20% 10%, rgba(125,211,252,.18), transparent 60%),
+        radial-gradient(900px 650px at 80% 25%, rgba(134,239,172,.12), transparent 55%),
+        radial-gradient(900px 650px at 40% 90%, rgba(252,165,165,.10), transparent 55%),
+        var(--bg);
+      overflow:hidden;
+    }
+    .app{
+      height: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 14px;
+      display:flex;
+      flex-direction:column;
+      gap: 12px;
+    }
+    header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      user-select:none;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width: 0;
+    }
+    .logo{
+      width:40px;height:40px;border-radius:14px;
+      background: linear-gradient(135deg, rgba(125,211,252,.95), rgba(134,239,172,.85));
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+      flex: 0 0 auto;
+    }
+    .brandText{ display:flex; flex-direction:column; line-height:1.05; min-width:0; }
+    .brandText b{
+      font-size: 16px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .brandText span{
+      font-size: 12px;
+      color: #a8b3d4;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .btn{
+      appearance:none;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      color: #e8eefc;
+      border-radius: 16px;
+      padding: 10px 12px;
+      font-weight: 900;
+      cursor:pointer;
+      box-shadow: 0 8px 18px rgba(0,0,0,.22);
+      user-select:none;
+    }
+    .btn:active{ transform: translateY(1px); }
+    .btn.primary{
+      background: linear-gradient(135deg, rgba(125,211,252,.28), rgba(134,239,172,.18));
+      border-color: rgba(125,211,252,.30);
+    }
+    .btn.ghost{ background: rgba(255,255,255,.05); }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+      color: #a8b3d4;
+      font-size: 12px;
+      font-weight: 800;
+      white-space:nowrap;
+    }
+
+    .card{
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 22px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+      padding: 14px;
+    }
+
+    .main{
+      flex: 1;
+      display:flex;
+      flex-direction:column;
+      gap: 12px;
+      min-height: 0;
+    }
+
+    .topRow{
+      display:flex;
+      gap: 12px;
+      align-items:stretch;
+      flex-wrap:wrap;
+    }
+    .topRow .card{ flex:1; min-width: 260px; }
+
+    .mascot{
+      display:flex;
+      gap: 12px;
+      align-items:center;
+    }
+    .face{
+      width:64px;height:64px;border-radius:22px;
+      background: radial-gradient(circle at 30% 25%, rgba(255,255,255,.25), transparent 35%),
+                  linear-gradient(135deg, rgba(125,211,252,.9), rgba(167,139,250,.55));
+      display:flex;align-items:center;justify-content:center;
+      font-size: 36px;
+      box-shadow: 0 10px 25px rgba(0,0,0,.25);
+      position:relative;
+      overflow:hidden;
+      flex: 0 0 auto;
+    }
+    .face::after{
+      content:"";
+      position:absolute; inset:-40%;
+      background: linear-gradient(120deg, transparent, rgba(255,255,255,.16), transparent);
+      transform: rotate(20deg);
+      animation: shine 7s linear infinite;
+    }
+    @keyframes shine{
+      0%{transform: translateX(-40%) rotate(20deg)}
+      100%{transform: translateX(140%) rotate(20deg)}
+    }
+    .bubble{
+      flex: 1;
+      background: rgba(15, 23, 42, .65);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 18px;
+      padding: 10px 12px;
+      min-height: 56px;
+      line-height: 1.35;
+      position:relative;
+    }
+    .bubble::before{
+      content:"";
+      position:absolute;
+      left:-10px; top:18px;
+      width:18px; height:18px;
+      background: rgba(15, 23, 42, .65);
+      border-left: 1px solid rgba(255,255,255,.12);
+      border-bottom: 1px solid rgba(255,255,255,.12);
+      transform: rotate(45deg);
+    }
+    .bubble b{ color: #7dd3fc; }
+
+    .quiz{
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      gap: 12px;
+      min-height: 0;
+    }
+    .questionCard{
+      flex: 1;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+      text-align:center;
+      gap: 10px;
+      min-height: 0;
+    }
+    .qMath{
+      font-size: clamp(44px, 7vw, 72px);
+      font-weight: 1000;
+      letter-spacing: .5px;
+    }
+    .qYomi{
+      font-size: clamp(18px, 3.5vw, 28px);
+      font-weight: 900;
+      color: #7dd3fc;
+    }
+    .qSub{
+      color: #a8b3d4;
+      font-size: 13px;
+      font-weight: 800;
+      margin-top: 2px;
+    }
+
+    .segmeter{
+      width: min(620px, 100%);
+      display:flex;
+      gap: 8px;
+      align-items:center;
+      justify-content:center;
+      margin-top: 6px;
+    }
+    .seg{
+      flex: 1 1 0;
+      height: 16px;
+      border-radius: 10px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.12);
+      overflow:hidden;
+      position:relative;
+    }
+    .seg.on::before{
+      content:"";
+      position:absolute; inset:0;
+      background: linear-gradient(90deg, rgba(125,211,252,.9), rgba(134,239,172,.9));
+    }
+
+    .bottomRow{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap: 10px;
+      flex-wrap:wrap;
+    }
+    .statusLine{
+      display:flex;
+      gap: 10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .flashGood{ animation: flashGood .28s ease; }
+    .flashBad{ animation: flashBad .28s ease; }
+    @keyframes flashGood{
+      0%{ box-shadow: 0 10px 30px rgba(0,0,0,.35); border-color: rgba(134,239,172,.3); }
+      40%{ box-shadow: 0 0 0 4px rgba(134,239,172,.18), 0 10px 30px rgba(0,0,0,.35); border-color: rgba(134,239,172,.55); }
+      100%{ box-shadow: 0 10px 30px rgba(0,0,0,.35); border-color: rgba(255,255,255,.12); }
+    }
+    @keyframes flashBad{
+      0%{ box-shadow: 0 10px 30px rgba(0,0,0,.35); border-color: rgba(252,165,165,.3); }
+      40%{ box-shadow: 0 0 0 4px rgba(252,165,165,.18), 0 10px 30px rgba(0,0,0,.35); border-color: rgba(252,165,165,.55); }
+      100%{ box-shadow: 0 10px 30px rgba(0,0,0,.35); border-color: rgba(255,255,255,.12); }
+    }
+    .hidden{ display:none !important; }
+
+    .fallback{
+      display:flex;
+      flex-direction:column;
+      gap: 10px;
+      width: min(620px, 100%);
+      margin-top: 8px;
+    }
+    .kbd{
+      display:grid;
+      grid-template-columns: repeat(5, minmax(0,1fr));
+      gap: 8px;
+    }
+    .kbd .btn{
+      padding: 12px 10px;
+      border-radius: 14px;
+      font-size: 18px;
+    }
+    .tiny{
+      font-size: 12px;
+      color: #a8b3d4;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <header>
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div class="brandText">
+          <b>九九を音でおぼえる</b>
+          <span>もんだいは みる＋きく｜こたえは こえで</span>
+        </div>
+      </div>
+      <div style="display:flex; gap:10px; align-items:center;">
+        <button class="btn ghost" id="soundBtn" title="おとテスト">♪</button>
+        <button class="btn" id="resetBtn" title="さいしょから">↺</button>
+      </div>
+    </header>
+
+    <div class="main">
+      <div class="topRow">
+        <div class="card">
+          <div class="mascot">
+            <div class="face" id="face" aria-hidden="true">🤖</div>
+            <div class="bubble">
+              <div id="bubbleMain"><b>ルール</b>：もんだいがでたら 5びょう いないに こたえてね。</div>
+              <div class="tiny" id="bubbleSub" style="margin-top:6px;">（マイクをつかうよ。はじめに「スタート」をおしてね）</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="statusLine">
+            <span class="pill" id="pillQ">もんだい 0/20</span>
+            <span class="pill" id="pillScore">せいかい 0</span>
+            <span class="pill" id="pillState">まいく まち</span>
+          </div>
+          <div class="tiny" style="margin-top:10px;">
+            ・こたえは <b>すうじ</b> でも <b>ことば</b> でもOK（例：8 / はち）<br/>
+            ・1もん 5びょう。じかんぎれでも つぎへ。
+          </div>
+          <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="btn primary" id="startBtn">スタート</button>
+            <button class="btn" id="stopBtn">とめる</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="quiz card" id="quizCard">
+        <div class="questionCard" id="screenIntro">
+          <div class="qMath">九九クイズ</div>
+          <div class="qYomi">こえで こたえよう</div>
+
+          <div class="segmeter" aria-label="countdown preview">
+            <div class="seg on"></div><div class="seg on"></div><div class="seg on"></div><div class="seg on"></div><div class="seg on"></div>
+          </div>
+
+          <div class="fallback hidden" id="fallbackInfo">
+            <div class="tiny">
+              このブラウザでは <b>音声回答</b> が使えない可能性があります。<br/>
+              できれば <b>Android: Chrome</b> をおすすめ。<br/>
+              テスト用に、ここに <b>タップ回答</b> を出します（音声が使えないときのみ）。
+            </div>
+            <div class="kbd" id="kbdIntro"></div>
+          </div>
+        </div>
+
+        <div class="questionCard hidden" id="screenQuiz">
+          <div class="qMath" id="qMath">2 × 1</div>
+          <div class="qYomi" id="qYomi">にいちが</div>
+          <div class="qSub">こたえを こえで いってね</div>
+
+          <div class="segmeter" aria-label="countdown">
+            <div class="seg on" id="seg1"></div>
+            <div class="seg on" id="seg2"></div>
+            <div class="seg on" id="seg3"></div>
+            <div class="seg on" id="seg4"></div>
+            <div class="seg on" id="seg5"></div>
+          </div>
+
+          <div class="fallback hidden" id="fallbackQuiz">
+            <div class="kbd" id="kbdQuiz"></div>
+            <div class="tiny">（テスト用：タップでもOK）</div>
+          </div>
+        </div>
+
+        <div class="questionCard hidden" id="screenResult">
+          <div class="qMath">おつかれさま！</div>
+          <div class="qYomi" id="resultScore">せいかい 0 / 20</div>
+          <div class="qSub" id="resultMsg">また やってみよう！</div>
+          <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
+            <button class="btn primary" id="againBtn">もういちど</button>
+            <button class="btn" id="backBtn">もどる</button>
+          </div>
+          <div class="tiny" style="margin-top:10px;">
+            ※読み上げが聞こえないときは、右上の「♪」を1回おしてね。
+          </div>
+        </div>
+      </div>
+
+      <div class="bottomRow">
+        <div class="statusLine">
+          <span class="pill" id="pillLast">さいご：—</span>
+          <span class="pill" id="pillTime">のこり 5s</span>
+        </div>
+        <div class="tiny">※はじめては マイクの きょかが ひつようです</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    const face = $("face");
+    const bubbleMain = $("bubbleMain");
+    const bubbleSub = $("bubbleSub");
+    const pillQ = $("pillQ");
+    const pillScore = $("pillScore");
+    const pillState = $("pillState");
+    const pillLast = $("pillLast");
+    const pillTime = $("pillTime");
+    const startBtn = $("startBtn");
+    const stopBtn = $("stopBtn");
+    const resetBtn = $("resetBtn");
+    const soundBtn = $("soundBtn");
+    const screenIntro = $("screenIntro");
+    const screenQuiz = $("screenQuiz");
+    const screenResult = $("screenResult");
+    const qMath = $("qMath");
+    const qYomi = $("qYomi");
+    const resultScore = $("resultScore");
+    const resultMsg = $("resultMsg");
+    const againBtn = $("againBtn");
+    const backBtn = $("backBtn");
+    const fallbackInfo = $("fallbackInfo");
+    const fallbackQuiz = $("fallbackQuiz");
+    const kbdIntro = $("kbdIntro");
+    const kbdQuiz = $("kbdQuiz");
+    const segEls = [$("seg1"),$("seg2"),$("seg3"),$("seg4"),$("seg5")];
+
+    const KUKU = {
+      1:{1:{chant:"いんいちが",answerYomi:"いち",ans:1},2:{chant:"いんにが",answerYomi:"に",ans:2},3:{chant:"いんさんが",answerYomi:"さん",ans:3},4:{chant:"いんしが",answerYomi:"し",ans:4},5:{chant:"いんごが",answerYomi:"ご",ans:5},6:{chant:"いんろくが",answerYomi:"ろく",ans:6},7:{chant:"いんしちが",answerYomi:"しち",ans:7},8:{chant:"いんはちが",answerYomi:"はち",ans:8},9:{chant:"いんくが",answerYomi:"く",ans:9}},
+      2:{1:{chant:"にいちが",answerYomi:"に",ans:2},2:{chant:"ににんが",answerYomi:"し",ans:4},3:{chant:"にさんが",answerYomi:"ろく",ans:6},4:{chant:"にしが",answerYomi:"はち",ans:8},5:{chant:"にご",answerYomi:"じゅう",ans:10},6:{chant:"にろく",answerYomi:"じゅうに",ans:12},7:{chant:"にしち",answerYomi:"じゅうし",ans:14},8:{chant:"にはち",answerYomi:"じゅうろく",ans:16},9:{chant:"にく",answerYomi:"じゅうはち",ans:18}},
+      3:{1:{chant:"さんいちが",answerYomi:"さん",ans:3},2:{chant:"さんにが",answerYomi:"ろく",ans:6},3:{chant:"さざんが",answerYomi:"く",ans:9},4:{chant:"さんし",answerYomi:"じゅうに",ans:12},5:{chant:"さんご",answerYomi:"じゅうご",ans:15},6:{chant:"さぶろく",answerYomi:"じゅうはち",ans:18},7:{chant:"さんしち",answerYomi:"にじゅういち",ans:21},8:{chant:"さんぱ",answerYomi:"にじゅうし",ans:24},9:{chant:"さんく",answerYomi:"にじゅうしち",ans:27}},
+      4:{1:{chant:"しいちが",answerYomi:"し",ans:4},2:{chant:"しにが",answerYomi:"はち",ans:8},3:{chant:"しさん",answerYomi:"じゅうに",ans:12},4:{chant:"しし",answerYomi:"じゅうろく",ans:16},5:{chant:"しご",answerYomi:"にじゅう",ans:20},6:{chant:"しろく",answerYomi:"にじゅうし",ans:24},7:{chant:"ししち",answerYomi:"にじゅうはち",ans:28},8:{chant:"しは",answerYomi:"さんじゅうに",ans:32},9:{chant:"しく",answerYomi:"さんじゅうろく",ans:36}},
+      5:{1:{chant:"ごいちが",answerYomi:"ご",ans:5},2:{chant:"ごに",answerYomi:"じゅう",ans:10},3:{chant:"ごさん",answerYomi:"じゅうご",ans:15},4:{chant:"ごし",answerYomi:"にじゅう",ans:20},5:{chant:"ごご",answerYomi:"にじゅうご",ans:25},6:{chant:"ごろく",answerYomi:"さんじゅう",ans:30},7:{chant:"ごしち",answerYomi:"さんじゅうご",ans:35},8:{chant:"ごは",answerYomi:"しじゅう",ans:40},9:{chant:"ごっく",answerYomi:"しじゅうご",ans:45}},
+      6:{1:{chant:"ろくいちが",answerYomi:"ろく",ans:6},2:{chant:"ろくに",answerYomi:"じゅうに",ans:12},3:{chant:"ろくさん",answerYomi:"じゅうはち",ans:18},4:{chant:"ろくし",answerYomi:"にじゅうし",ans:24},5:{chant:"ろくご",answerYomi:"さんじゅう",ans:30},6:{chant:"ろくろく",answerYomi:"さんじゅうろく",ans:36},7:{chant:"ろくしち",answerYomi:"しじゅうに",ans:42},8:{chant:"ろくは",answerYomi:"しじゅうはち",ans:48},9:{chant:"ろっく",answerYomi:"ごじゅうし",ans:54}},
+      7:{1:{chant:"しちいちが",answerYomi:"しち",ans:7},2:{chant:"しちに",answerYomi:"じゅうし",ans:14},3:{chant:"しちさん",answerYomi:"にじゅういち",ans:21},4:{chant:"しちし",answerYomi:"にじゅうはち",ans:28},5:{chant:"しちご",answerYomi:"さんじゅうご",ans:35},6:{chant:"しちろく",answerYomi:"しじゅうに",ans:42},7:{chant:"しちしち",answerYomi:"しじゅうく",ans:49},8:{chant:"しちは",answerYomi:"ごじゅうろく",ans:56},9:{chant:"しちく",answerYomi:"ろくじゅうさん",ans:63}},
+      8:{1:{chant:"はちいちが",answerYomi:"はち",ans:8},2:{chant:"はちに",answerYomi:"じゅうろく",ans:16},3:{chant:"はちさん",answerYomi:"にじゅうし",ans:24},4:{chant:"はちし",answerYomi:"さんじゅうに",ans:32},5:{chant:"はちご",answerYomi:"しじゅう",ans:40},6:{chant:"はちろく",answerYomi:"しじゅうはち",ans:48},7:{chant:"はちしち",answerYomi:"ごじゅうろく",ans:56},8:{chant:"はっぱ",answerYomi:"ろくじゅうし",ans:64},9:{chant:"はっく",answerYomi:"しちじゅうに",ans:72}},
+      9:{1:{chant:"くいちが",answerYomi:"く",ans:9},2:{chant:"くに",answerYomi:"じゅうはち",ans:18},3:{chant:"くさん",answerYomi:"にじゅうしち",ans:27},4:{chant:"くし",answerYomi:"さんじゅうろく",ans:36},5:{chant:"くご",answerYomi:"しじゅうご",ans:45},6:{chant:"くろく",answerYomi:"ごじゅうし",ans:54},7:{chant:"くしち",answerYomi:"ろくじゅうさん",ans:63},8:{chant:"くは",answerYomi:"しちじゅうに",ans:72},9:{chant:"くく",answerYomi:"はちじゅういち",ans:81}}
+    };
+
+    function speak(text, {rate=1.12, pitch=1.12, volume=1.0} = {}){
+      if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) return false;
+      try{
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = "ja-JP";
+        u.rate = rate;
+        u.pitch = pitch;
+        u.volume = volume;
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(u);
+        return true;
+      }catch{
+        return false;
+      }
+    }
+
+    let audioCtx = null;
+    function ensureAudioCtx(){
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === "suspended") audioCtx.resume().catch(()=>{});
+      return audioCtx;
+    }
+    function ping(){
+      if (!(window.AudioContext || window.webkitAudioContext)) return;
+      try{
+        const ctx = ensureAudioCtx();
+        const now = ctx.currentTime;
+        const g = ctx.createGain();
+        g.gain.value = 0.0001;
+        g.connect(ctx.destination);
+        const o = ctx.createOscillator();
+        o.type = "sine";
+        o.frequency.setValueAtTime(880, now);
+        o.connect(g);
+        g.gain.setTargetAtTime(0.12, now, 0.015);
+        g.gain.setTargetAtTime(0.0001, now + 0.12, 0.02);
+        o.start(now);
+        o.stop(now + 0.18);
+      }catch{}
+    }
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let rec = null;
+    let recognitionOK = !!SpeechRecognition;
+
+    function setupRecognition(){
+      if (!recognitionOK) return;
+      rec = new SpeechRecognition();
+      rec.lang = "ja-JP";
+      rec.interimResults = false;
+      rec.maxAlternatives = 3;
+      rec.continuous = false;
+
+      rec.onstart = () => { pillState.textContent = "まいく ON"; };
+      rec.onend = () => { pillState.textContent = running ? "まいく きいてる…" : "まいく OFF"; };
+      rec.onerror = () => {
+        pillState.textContent = "まいく NG";
+        setMascot("😵‍💫", "<b>マイクが つかえないみたい…</b>", "きょか（許可）を かくにんしてね");
+      };
+      rec.onresult = (ev) => {
+        if (!running || lockedNext) return;
+        const res = ev.results?.[0];
+        if (!res) return;
+        const transcript = String(res[0].transcript || "").trim();
+        handleAnswer(transcript);
+      };
+    }
+
+    const DIGIT_MAP = {"ぜろ":0,"れい":0,"0":0,"〇":0,"零":0,"いち":1,"1":1,"一":1,"に":2,"2":2,"二":2,"さん":3,"3":3,"三":3,"し":4,"よん":4,"4":4,"四":4,"ご":5,"5":5,"五":5,"ろく":6,"6":6,"六":6,"なな":7,"しち":7,"7":7,"七":7,"はち":8,"8":8,"八":8,"きゅう":9,"く":9,"9":9,"九":9};
+
+    function normalizeKana(s){
+      return String(s || "").toLowerCase().replace(/\s+/g, "").replace(/ー/g,"").replace(/[，,。．.！!？?]/g,"");
+    }
+
+    function parseNumberJapanese(input){
+      const raw = normalizeKana(input);
+      if (!raw) return null;
+
+      const m = raw.match(/(\d{1,3})/);
+      if (m) {
+        const v = Number(m[1]);
+        return Number.isFinite(v) ? v : null;
+      }
+      if (raw in DIGIT_MAP) return DIGIT_MAP[raw];
+
+      const tensWords = [
+        {k:["じゅう","十"], v:10},
+        {k:["にじゅう","二十"], v:20},
+        {k:["さんじゅう","三十"], v:30},
+        {k:["よんじゅう","しじゅう","四十"], v:40},
+        {k:["ごじゅう","五十"], v:50},
+        {k:["ろくじゅう","六十"], v:60},
+        {k:["ななじゅう","しちじゅう","七十"], v:70},
+        {k:["はちじゅう","八十"], v:80},
+        {k:["きゅうじゅう","くじゅう","九十"], v:90},
+      ];
+      for (const t of tensWords){
+        for (const kk of t.k){
+          if (raw === kk) return t.v;
+          if (raw.startsWith(kk)){
+            const rest = raw.slice(kk.length);
+            if (!rest) return t.v;
+            if (rest in DIGIT_MAP) return t.v + DIGIT_MAP[rest];
+          }
+        }
+      }
+      return null;
+    }
+
+    const TOTAL = 20;
+    const LIMIT_MS = 5000;
+    const LIMIT_SEC = 5;
+
+    let running = false;
+    let idx = 0;
+    let score = 0;
+    let current = null;
+    let tickTimer = null;
+    let tStart = 0;
+    let lastTranscript = "";
+    let lockedNext = false;
+    let lastShownSec = 5;
+
+    const FACES = ["🤖","🦊","🐸","🐼","🦉","🐙","🧠","🚀"];
+    function rand(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+    function setMascot(emoji, main, sub){
+      face.textContent = emoji;
+      bubbleMain.innerHTML = main;
+      bubbleSub.textContent = sub || "";
+    }
+
+    function setScreen(which){
+      screenIntro.classList.toggle("hidden", which !== "intro");
+      screenQuiz.classList.toggle("hidden", which !== "quiz");
+      screenResult.classList.toggle("hidden", which !== "result");
+    }
+
+    function updatePills(){
+      pillQ.textContent = `もんだい ${Math.min(idx, TOTAL)}/${TOTAL}`;
+      pillScore.textContent = `せいかい ${score}`;
+      pillLast.textContent = lastTranscript ? `さいご：${lastTranscript}` : "さいご：—";
+    }
+
+    function setTimeLeftSec(sec){
+      const s = Math.max(0, Math.min(LIMIT_SEC, sec));
+      pillTime.textContent = `のこり ${s}s`;
+    }
+
+    function setSegsOn(n){
+      for (let i=0;i<segEls.length;i++){
+        segEls[i].classList.toggle("on", i < n);
+      }
+    }
+
+    function genQuestion(){
+      const a = 1 + Math.floor(Math.random()*9);
+      const b = 1 + Math.floor(Math.random()*9);
+      const it = KUKU[a][b];
+      return {a,b, chant: it.chant, answerYomi: it.answerYomi, ans: it.ans};
+    }
+
+    function stopRecognition(){ try{ rec && rec.stop(); }catch{} }
+    function startRecognition(){
+      if (!recognitionOK) return;
+      try{ rec.start(); }catch{}
+    }
+
+    function speakQuestion(q){ speak(`${q.chant}。`, {rate:1.20, pitch:1.08}); }
+    function speakFull(q){ /* feedback disabled */ }
+
+    function startTimer(){
+      tStart = performance.now();
+      lastShownSec = LIMIT_SEC;
+      setTimeLeftSec(LIMIT_SEC);
+      setSegsOn(LIMIT_SEC);
+
+      if (tickTimer) clearInterval(tickTimer);
+      tickTimer = setInterval(()=>{
+        if (!running || lockedNext) return;
+        const now = performance.now();
+        const elapsed = now - tStart;
+        const left = LIMIT_MS - elapsed;
+
+        const secLeft = Math.max(0, Math.ceil(left / 1000));
+        if (secLeft !== lastShownSec){
+          lastShownSec = secLeft;
+          setTimeLeftSec(secLeft);
+          setSegsOn(secLeft);
+        }
+        if (left <= 0) timeUp();
+      }, 50);
+    }
+
+    function flash(cardEl, good){
+      cardEl.classList.remove("flashGood","flashBad");
+      void cardEl.offsetWidth;
+      cardEl.classList.add(good ? "flashGood" : "flashBad");
+    }
+
+    function nextQuestion(){
+      lockedNext = false;
+      stopRecognition();
+
+      if (idx >= TOTAL){ finish(); return; }
+
+      current = genQuestion();
+      idx += 1;
+
+      qMath.textContent = `${current.a} × ${current.b}`;
+      qYomi.textContent = current.chant;
+
+      updatePills();
+      setScreen("quiz");
+      setMascot(rand(FACES), "<b>いくよ！</b> 5びょう いないに こたえてね。", "（こえで こたえる）");
+
+      speakQuestion(current);
+      startTimer();
+
+      lastTranscript = "";
+      updatePills();
+
+      if (recognitionOK){
+        setTimeout(()=>{ if (running && !lockedNext) startRecognition(); }, 260);
+      }
+    }
+
+    function lockAndAdvance(delayMs=260){
+      lockedNext = true;
+      stopRecognition();
+      if (tickTimer) clearInterval(tickTimer);
+      setTimeout(()=>{ if (running) nextQuestion(); }, delayMs);
+    }
+
+    function timeUp(){
+      if (lockedNext) return;
+      lastTranscript = "（じかんぎれ）";
+      updatePills();
+      setMascot("⏱️", "<b>じかんぎれ！</b>", "つぎ いこう！");
+      flash($("quizCard"), false);
+ping();
+      lockAndAdvance(520);
+    }
+
+    function handleAnswer(transcript){
+      if (lockedNext) return;
+
+      lastTranscript = transcript;
+      updatePills();
+
+      const n = parseNumberJapanese(transcript);
+      const ok = (n !== null && current && n === current.ans);
+
+      if (ok){
+        score += 1;
+        updatePills();
+        setMascot(rand(FACES), "<b>ぴんぽん！</b> いいね！", "つぎ いこう！");
+        flash($("quizCard"), true);
+lockAndAdvance(520);
+      } else {
+        setMascot("😵‍💫", "<b>ぶー！</b> つぎで とりかえそう！", "いまの せいかいを きいてね");
+        flash($("quizCard"), false);
+lockAndAdvance(700);
+      }
+    }
+
+    function finish(){
+      running = false;
+      stopRecognition();
+      if (tickTimer) clearInterval(tickTimer);
+
+      setScreen("result");
+      resultScore.textContent = `せいかい ${score} / ${TOTAL}`;
+
+      let msg = "また やってみよう！";
+      if (score === TOTAL) msg = "ぜんぶ せいかい！ すごい！";
+      else if (score >= Math.floor(TOTAL*0.8)) msg = "かなり できた！ いいね！";
+      else if (score >= Math.floor(TOTAL*0.5)) msg = "いい ちょうし！ つづけよう！";
+      else msg = "だいじょうぶ。くりかえしで おぼえるよ！";
+
+      resultMsg.textContent = msg;
+      setMascot(rand(FACES), "<b>おつかれさま！</b>", msg);
+
+      pillState.textContent = "おわり";
+      setTimeLeftSec(0);
+      setSegsOn(0);
+      speak(`おつかれさま。せいかいは ${score}。`, {rate:1.03, pitch:1.03});
+    }
+
+    function resetUI(){
+      running = false;
+      idx = 0;
+      score = 0;
+      current = null;
+      lastTranscript = "";
+      lockedNext = false;
+      stopRecognition();
+      if (tickTimer) clearInterval(tickTimer);
+
+      updatePills();
+      pillState.textContent = "まいく まち";
+      setTimeLeftSec(LIMIT_SEC);
+      setSegsOn(LIMIT_SEC);
+
+      setScreen("intro");
+      setMascot("🤖", "<b>ルール</b>：もんだいがでたら 5びょう いないに こたえてね。", "（マイクをつかうよ。はじめに「スタート」をおしてね）");
+    }
+
+    function startSession(){
+      if (running) return;
+      running = true;
+      idx = 0;
+      score = 0;
+      lastTranscript = "";
+      lockedNext = false;
+
+      ping();
+      ensureAudioCtx();
+
+      updatePills();
+      pillState.textContent = recognitionOK ? "まいく きょか" : "まいく NG";
+
+      if (!recognitionOK){
+        fallbackInfo.classList.remove("hidden");
+        fallbackQuiz.classList.remove("hidden");
+        setMascot("😵‍💫", "<b>音声回答が つかえないみたい…</b>", "テスト用に タップで こたえよう");
+      } else {
+        fallbackInfo.classList.add("hidden");
+        fallbackQuiz.classList.add("hidden");
+        setMascot(rand(FACES), "<b>スタート！</b> いくよ！", "マイクを きょかしてね");
+        speak("スタート。マイクを きょかしてね。", {rate:1.10, pitch:1.08});
+      }
+
+      setTimeout(()=>{ if (running) nextQuestion(); }, 480);
+    }
+
+    function stopSession(){
+      running = false;
+      stopRecognition();
+      if (tickTimer) clearInterval(tickTimer);
+      pillState.textContent = "とめた";
+      setMascot("🛑", "<b>とめたよ。</b>", "また スタートで さいしょから");
+      setScreen("intro");
+      setTimeLeftSec(LIMIT_SEC);
+      setSegsOn(LIMIT_SEC);
+    }
+
+    function renderKeypad(container){
+      const nums = [0,1,2,3,4,5,6,7,8,9];
+      container.innerHTML = "";
+      for (const n of nums){
+        const b = document.createElement("button");
+        b.className = "btn";
+        b.textContent = String(n);
+        b.addEventListener("click", ()=>{
+          if (!running || lockedNext || !current) return;
+          handleAnswer(String(n));
+        });
+        container.appendChild(b);
+      }
+    }
+    renderKeypad(kbdIntro);
+    renderKeypad(kbdQuiz);
+
+    startBtn.addEventListener("click", startSession);
+    stopBtn.addEventListener("click", stopSession);
+    resetBtn.addEventListener("click", resetUI);
+
+    soundBtn.addEventListener("click", ()=>{
+      ping();
+      const ok = speak("おと テスト。ぴんぽん。", {rate:1.08, pitch:1.18});
+      if (!ok) ping();
+      setMascot(rand(FACES), "<b>おと テスト！</b>", "きこえた？");
+    });
+
+    againBtn.addEventListener("click", ()=>{ resetUI(); startSession(); });
+    backBtn.addEventListener("click", resetUI);
+
+    setupRecognition();
+    resetUI();
+    updatePills();
+
+    if (!recognitionOK){
+      fallbackInfo.classList.remove("hidden");
+      fallbackQuiz.classList.remove("hidden");
+      pillState.textContent = "まいく NG";
+    }
+  </script>
+</body>
+</html>

@@ -278,6 +278,19 @@
 
     .hidden{ display:none !important; }
 
+    /* mode-based visibility (no scroll on start screen) */
+    body[data-mode="start"] .hideOnStart{ display:none !important; }
+    body[data-mode="start"] .quiz.card{ padding: 12px; }
+    body[data-mode="start"] .panel{ gap: 10px; }
+    body[data-mode="start"] .courseRow{ padding: 10px; gap: 6px; }
+    body[data-mode="start"] .panel h2{ font-size: 17px; }
+    body[data-mode="start"] .note{ font-size: 11px; }
+    body[data-mode="start"] .choiceBtn{ padding: 9px 10px; min-width: 44px; }
+    @media (max-height: 720px){
+      body[data-mode="start"] .note{ display:none; }
+    }
+
+
     /* start screen */
     .panel{
       width: min(720px, 100%);
@@ -318,6 +331,18 @@
       gap: 8px;
       flex-wrap:wrap;
     }
+    .choicesGrid{
+      display:grid;
+      grid-template-columns: repeat(6, minmax(0,1fr));
+      gap: 8px;
+    }
+    .choicesGrid .choiceBtn{ width:100%; min-width: 0; }
+    .choicesGridRand{
+      display:grid;
+      grid-template-columns: repeat(5, minmax(0,1fr));
+      gap: 8px;
+    }
+    .choicesGridRand .choiceBtn{ width:100%; min-width: 0; }
     .choiceBtn{
       padding: 10px 12px;
       border-radius: 14px;
@@ -325,6 +350,7 @@
       text-align:center;
       font-size: 15px;
     }
+    .span2{ grid-column: span 2; }
     .star{
       display:inline-flex;
       align-items:center;
@@ -363,7 +389,7 @@
   </style>
 </head>
 
-<body>
+<body data-mode="start">
   <div class="app">
     <header>
       <div class="brand">
@@ -380,7 +406,7 @@
     </header>
 
     <div class="main">
-      <div class="topRow">
+      <div class="topRow hideOnStart">
         <div class="card">
           <div class="mascot">
             <div class="face" id="face" aria-hidden="true">🤖</div>
@@ -419,7 +445,7 @@
                 <div>のぼり九九</div>
                 <span>1→9 のじゅんばん</span>
               </div>
-              <div class="choices" id="ascChoices"></div>
+              <div class="choices choicesGrid" id="ascChoices"></div>
               <div class="note">※（⭐）をえらぶと、だんが らんだむ（1〜9）ででるよ</div>
             </div>
 
@@ -428,7 +454,7 @@
                 <div>くだり九九</div>
                 <span>9→1 のじゅんばん</span>
               </div>
-              <div class="choices" id="descChoices"></div>
+              <div class="choices choicesGrid" id="descChoices"></div>
               <div class="note">※（⭐）をえらぶと、だんが らんだむ（1〜9）ででるよ</div>
             </div>
 
@@ -437,7 +463,7 @@
                 <div>ばらばら九九</div>
                 <span>だんは かんけいなく らんだむ</span>
               </div>
-              <div class="choices" id="randChoices"></div>
+              <div class="choices choicesGridRand" id="randChoices"></div>
               <div class="note">10=10もん / 20=20もん / 30=30もん / 40=40もん / 50=50もん</div>
             </div>
 
@@ -479,7 +505,7 @@
         </div>
       </div>
 
-      <div class="bottomRow">
+      <div class="bottomRow hideOnStart">
         <div class="statusLine">
           <span class="pill" id="pillLast">さいご：—</span>
           <span class="pill" id="pillTime">のこり 5s</span>
@@ -732,6 +758,7 @@
     }
 
     function setScreen(which){
+      document.body.setAttribute("data-mode", which);
       screenStart.classList.toggle("hidden", which !== "start");
       screenQuiz.classList.toggle("hidden", which !== "quiz");
       screenResult.classList.toggle("hidden", which !== "result");
@@ -1068,7 +1095,7 @@
       }
       const starBtn = document.createElement("button");
       starBtn.id = `${prefix}-rand`;
-      starBtn.className = "btn choiceBtn";
+      starBtn.className = "btn choiceBtn span2";
       starBtn.innerHTML = '※ <span class="star">⭐</span>';
       starBtn.addEventListener("click", ()=>{
         setCourse(course);

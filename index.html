@@ -500,6 +500,26 @@
     }
   }
 
+  function speakAsync(text, opts={}){
+    return new Promise((resolve)=>{
+      if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) return resolve(false);
+      try{
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = "ja-JP";
+        u.rate = opts.rate ?? 1.22;
+        u.pitch = opts.pitch ?? 1.05;
+        u.volume = opts.volume ?? 1.0;
+        u.onend = ()=>resolve(true);
+        u.onerror = ()=>resolve(false);
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(u);
+      }catch{
+        resolve(false);
+      }
+    });
+  }
+
+
   // ---------- Audio: SFX (WebAudio) ----------
   let audioCtx = null;
   function ensureAudioCtx(){
@@ -686,22 +706,42 @@
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   let rec = null;
   const recognitionOK = !!SpeechRecognition;
-  let recRunning = false;
+    let recRunning = false;
   let wantListen = false;
   let recRestartTO = null;
+  let lastRecStartAt = 0;
+  let restartBackoff = 140; // ms (increases on repeated failures)
   function msLeft(){ return LIMIT_MS - (performance.now() - tStart); }
-  function maybeRestartRecognition(){
+
+  function maybeRestartRecognition(from){
     if (!recognitionOK) return;
     if (!running || paused || lockedNext) return;
     if (!wantListen) return;
     if (recRunning) return;
+
     const left = msLeft();
-    if (left <= 250) return;
+    if (left <= 650) return; // もうすぐ終了なら粘らない（暴れ防止）
+
+    const now = performance.now();
+    if (now - lastRecStartAt < 420) return; // 連打ガード
+
+    recFailCount = (recFailCount||0) + 1;
+    if (recFailCount >= 3){
+      // 音声が不安定なときは、数字ボタンも出してゲームを止めない
+      fallbackQuiz.classList.remove("hidden");
+    }
     if (recRestartTO) clearTimeout(recRestartTO);
     recRestartTO = setTimeout(()=>{
       if (!running || paused || lockedNext || !wantListen || recRunning) return;
       startRecognition();
-    }, 120);
+    }, restartBackoff);
+
+    // 連続失敗で少しずつ間隔を伸ばす（not-allowed/aborted対策）
+    restartBackoff = Math.min(520, restartBackoff + 60);
+  }
+
+  function resetRecBackoff(){
+    restartBackoff = 140;
   }
 
   function setupRecognition(){
@@ -709,10 +749,10 @@
     rec = new SpeechRecognition();
     rec.lang = "ja-JP";
     rec.interimResults = false;
-    rec.maxAlternatives = 5;
-    rec.continuous = false;
+    rec.maxAlternatives = 10;
+    rec.continuous = true;
 
-    rec.onstart = ()=>{ recRunning = true; };
+    rec.onstart = ()=>{ recRunning = true; resetRecBackoff(); };
 
     rec.onresult = (ev) => {
       if (!running || paused || lockedNext) return;
@@ -726,20 +766,26 @@
         const n = parseNumberJapanese(t);
         if (n !== null){ picked = t; break; }
       }
+      recFailCount = 0;
       if (!picked) picked = String(res[0].transcript || "").trim();
       handleAnswer(picked);
     };
 
     rec.onerror = (ev)=>{
       recRunning = false;
-      // 5秒以内なら聞き直す（粘る）
-      maybeRestartRecognition();
+      const err = ev && ev.error ? String(ev.error) : "";
+      // no-speech / aborted はよく出る。残り時間があれば穏やかに再スタート。
+      if (err === "no-speech" || err === "aborted"){
+        maybeRestartRecognition("onerror:"+err);
+      }
+      // not-allowed / service-not-allowed は権限系なので再試行しない（暴れ防止）
     };
+
+    rec.onnomatch = ()=>{ recRunning = false; maybeRestartRecognition("onnomatch"); };
 
     rec.onend = ()=>{
       recRunning = false;
-      // Android Chromeで勝手に止まることがあるので、残り時間があれば再スタート
-      maybeRestartRecognition();
+      maybeRestartRecognition("onend");
     };
   }
   function stopRecognition(){
@@ -750,7 +796,10 @@
   function startRecognition(){
     if (!recognitionOK) return;
     if (!wantListen || paused || lockedNext || !running) return;
-    try{ rec.start(); }catch{}
+    try{
+      lastRecStartAt = performance.now();
+      rec.start();
+    }catch{}
   }
 
   // ---------- Answer parsing ----------
@@ -766,6 +815,30 @@
   function normalizeKana(s){ return String(s||"").toLowerCase().replace(/\s+/g,"").replace(/ー/g,"").replace(/[，,。．.！!？?]/g,""); }
   function parseNumberJapanese(input){
     const raw = normalizeKana(input);
+
+    // 文章の中に数字語が混ざるケース（例: "こたえは はち です"）を吸収
+    const candidates = [raw];
+    // ひらがな・漢字を含む元文字列も見る
+    const raw2 = String(input||"").trim();
+    if (raw2 && raw2 !== raw){
+      candidates.push(normalizeKana(raw2));
+    }
+    for (const c of candidates){
+      if (!c) continue;
+      if (c in DIGIT_MAP) return DIGIT_MAP[c];
+      if (c in ALIAS_MAP) return ALIAS_MAP[c];
+
+      // 部分一致で拾う（長い方から）
+      const keys = Object.keys(DIGIT_MAP).concat(Object.keys(ALIAS_MAP)).sort((a,b)=>b.length-a.length);
+      for (const k of keys){
+        if (k.length < 2) continue;
+        if (c.includes(k)){
+          const v = (k in DIGIT_MAP) ? DIGIT_MAP[k] : ALIAS_MAP[k];
+          return v;
+        }
+      }
+    }
+
     if (!raw) return null;
     const m = raw.match(/(\d{1,3})/);
     if (m){ const v = Number(m[1]); return Number.isFinite(v)? v : null; }
@@ -902,6 +975,7 @@
   let good = 0;
   let bad  = 0;
   let current = null;
+  let recFailCount = 0;
 
   let tStart = 0;
   let tickTimer = null;
@@ -924,7 +998,7 @@
     bitBad.textContent = String(bad);
   }
 
-  function speakQuestion(q){ speak(`${q.chant}。`, {rate:1.22, pitch:1.05}); }
+  function speakQuestion(q){ return speakAsync(`${q.chant}。`, {rate:1.22, pitch:1.05}); }。`, {rate:1.22, pitch:1.05}); }
 
   function shuffle(arr){
     for (let i=arr.length-1;i>0;i--){
@@ -959,7 +1033,6 @@
 
   function startGame(){
     ensureAudioCtx();
-    initMic().then(()=>{ if (running && !paused) startMicMeter(); }).catch(()=>{});
     stopRecognition();
     window.speechSynthesis && window.speechSynthesis.cancel();
 
@@ -1011,7 +1084,6 @@
     paused = false;
     lockedNext = false;
     setPlayStopIcon();
-    initMic().then(()=>{ if (running && !paused) startMicMeter(); }).catch(()=>{});
     setMascot("🤖", "<b>クック先生：</b> さいかい！");
     startTimer();
     if (recognitionOK) setTimeout(()=>{ if (running && !paused && !lockedNext) startRecognition(); }, 180);
@@ -1028,6 +1100,7 @@
   function startTimer(){
     stopTimers();
     wantListen = true;
+    initMic().then(()=>{ if (running && !paused) startMicMeter(); }).catch(()=>{});
     tStart = performance.now();
     lastShownSec = LIMIT_SEC;
     setSegsOn(LIMIT_SEC);
@@ -1064,6 +1137,7 @@
     if (idx >= totalQuestions){ finish(); return; }
 
     current = questionPool[idx];
+    recFailCount = 0;
     idx += 1;
 
     qMath.textContent = `${current.a} × ${current.b}`;

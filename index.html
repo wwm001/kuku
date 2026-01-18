@@ -230,6 +230,47 @@
     .seg{ flex: 1 1 0; height: 16px; border-radius: 12px; background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.16); overflow:hidden; position:relative; }
     .seg.on::before{ content:""; position:absolute; inset:0; background: linear-gradient(90deg, rgba(34,197,94,.95), rgba(96,165,250,.95)); }
 
+    .micMeter{
+      width: min(620px, 100%);
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      margin-top: 6px;
+      user-select:none;
+    }
+    .micIcon{
+      width: 34px; height: 28px;
+      display:flex; align-items:center; justify-content:center;
+      border-radius: 12px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.14);
+      font-size: 16px;
+      flex: 0 0 auto;
+    }
+    .micBar{
+      flex:1;
+      height: 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.14);
+      overflow:hidden;
+      position:relative;
+    }
+    .micFill{
+      height: 100%;
+      width: 0%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(34,197,94,.95), rgba(96,165,250,.95));
+      transition: width .07s linear;
+    }
+    .micHint{
+      font-size: 11px;
+      font-weight: 900;
+      color: rgba(255,255,255,.65);
+      margin-top: -4px;
+    }
+
+
     .controlBar{ width:min(720px, 100%); display:flex; align-items:center; justify-content:space-between; gap: 10px; margin-top: 8px; flex-wrap:wrap; }
     .scoreBits{ display:flex; align-items:center; gap: 10px; flex-wrap:wrap; }
     .bit{ display:inline-flex; align-items:center; gap: 8px; padding: 8px 10px; border-radius: 999px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14); font-weight: 1000; }
@@ -327,6 +368,11 @@
             <div class="seg on" id="seg5"></div>
           </div>
 
+          <div class="micMeter" id="micMeter" aria-label="mic level">
+            <div class="micIcon">🎤</div>
+            <div class="micBar"><div class="micFill" id="micFill"></div></div>
+          </div>
+
           <div class="controlBar">
             <div class="scoreBits">
               <div class="bit q"><span class="badge">🎮</span><span id="bitQ">0/0</span></div>
@@ -393,6 +439,8 @@
   const qMath = $("qMath");
   const qYomi = $("qYomi");
   const segEls = [$("seg1"),$("seg2"),$("seg3"),$("seg4"),$("seg5")];
+  const micMeter = $("micMeter");
+  const micFill = $("micFill");
   const bitQ = $("bitQ");
   const bitGood = $("bitGood");
   const bitBad = $("bitBad");
@@ -459,6 +507,69 @@
     if (audioCtx.state === "suspended") audioCtx.resume().catch(()=>{});
     return audioCtx;
   }
+
+  // ---------- Mic meter (getUserMedia + analyser) ----------
+  let micStream = null;
+  let micAnalyser = null;
+  let micData = null;
+  let micRAF = null;
+  let micOK = false;
+
+  async function initMic(){
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return false;
+    if (micStream) return true;
+    try{
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+      });
+      micStream = stream;
+      const ctx = ensureAudioCtx();
+      const srcNode = ctx.createMediaStreamSource(stream);
+      micAnalyser = ctx.createAnalyser();
+      micAnalyser.fftSize = 1024;
+      micAnalyser.smoothingTimeConstant = 0.82;
+      srcNode.connect(micAnalyser);
+      micData = new Uint8Array(micAnalyser.fftSize);
+      micOK = true;
+      return true;
+    }catch(e){
+      micOK = false;
+      try{ micMeter && (micMeter.style.display="none"); }catch{}
+      return false;
+    }
+  }
+
+  function stopMicMeter(){
+    if (micRAF) cancelAnimationFrame(micRAF);
+    micRAF = null;
+    if (micFill) micFill.style.width = "0%";
+  }
+
+  function startMicMeter(){
+    if (!micOK || !micAnalyser || !micData) return;
+    stopMicMeter();
+    const loop = ()=>{
+      if (!running || paused){ stopMicMeter(); return; }
+      try{
+        micAnalyser.getByteTimeDomainData(micData);
+        // RMS
+        let sum = 0;
+        for (let i=0;i<micData.length;i++){
+          const v = (micData[i]-128)/128;
+          sum += v*v;
+        }
+        const rms = Math.sqrt(sum/micData.length); // 0..~1
+        // 感度ではなく「見える化」：0.02〜0.25を主に使う
+        let level = (rms - 0.02) / 0.23;
+        level = Math.max(0, Math.min(1, level));
+        const pct = Math.round(level * 100);
+        if (micFill) micFill.style.width = pct + "%";
+      }catch{}
+      micRAF = requestAnimationFrame(loop);
+    };
+    micRAF = requestAnimationFrame(loop);
+  }
+
   function playTone(freq, duration, {volume=0.12, type="sine", attack=0.008, release=0.03} = {}){
     if (!(window.AudioContext || window.webkitAudioContext)) return;
     try{
@@ -575,27 +686,83 @@
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   let rec = null;
   const recognitionOK = !!SpeechRecognition;
+  let recRunning = false;
+  let wantListen = false;
+  let recRestartTO = null;
+  function msLeft(){ return LIMIT_MS - (performance.now() - tStart); }
+  function maybeRestartRecognition(){
+    if (!recognitionOK) return;
+    if (!running || paused || lockedNext) return;
+    if (!wantListen) return;
+    if (recRunning) return;
+    const left = msLeft();
+    if (left <= 250) return;
+    if (recRestartTO) clearTimeout(recRestartTO);
+    recRestartTO = setTimeout(()=>{
+      if (!running || paused || lockedNext || !wantListen || recRunning) return;
+      startRecognition();
+    }, 120);
+  }
 
   function setupRecognition(){
     if (!recognitionOK) return;
     rec = new SpeechRecognition();
     rec.lang = "ja-JP";
     rec.interimResults = false;
-    rec.maxAlternatives = 3;
+    rec.maxAlternatives = 5;
     rec.continuous = false;
+
+    rec.onstart = ()=>{ recRunning = true; };
+
     rec.onresult = (ev) => {
       if (!running || paused || lockedNext) return;
       const res = ev.results?.[0];
       if (!res) return;
-      const transcript = String(res[0].transcript || "").trim();
-      handleAnswer(transcript);
+
+      // 代替候補も含めて、数字として解釈できるものを優先
+      let picked = null;
+      for (let i=0; i<res.length; i++){
+        const t = String(res[i].transcript || "").trim();
+        const n = parseNumberJapanese(t);
+        if (n !== null){ picked = t; break; }
+      }
+      if (!picked) picked = String(res[0].transcript || "").trim();
+      handleAnswer(picked);
+    };
+
+    rec.onerror = (ev)=>{
+      recRunning = false;
+      // 5秒以内なら聞き直す（粘る）
+      maybeRestartRecognition();
+    };
+
+    rec.onend = ()=>{
+      recRunning = false;
+      // Android Chromeで勝手に止まることがあるので、残り時間があれば再スタート
+      maybeRestartRecognition();
     };
   }
-  function stopRecognition(){ try{ rec && rec.stop(); }catch{} }
-  function startRecognition(){ if (!recognitionOK) return; try{ rec.start(); }catch{} }
+  function stopRecognition(){
+    wantListen = false;
+    if (recRestartTO) { clearTimeout(recRestartTO); recRestartTO = null; }
+    try{ rec && rec.stop(); }catch{}
+  }
+  function startRecognition(){
+    if (!recognitionOK) return;
+    if (!wantListen || paused || lockedNext || !running) return;
+    try{ rec.start(); }catch{}
+  }
 
   // ---------- Answer parsing ----------
   const DIGIT_MAP = {"ぜろ":0,"れい":0,"0":0,"〇":0,"零":0,"いち":1,"1":1,"一":1,"に":2,"2":2,"二":2,"さん":3,"3":3,"三":3,"し":4,"よん":4,"4":4,"四":4,"ご":5,"5":5,"五":5,"ろく":6,"6":6,"六":6,"なな":7,"しち":7,"7":7,"七":7,"はち":8,"8":8,"八":8,"きゅう":9,"く":9,"9":9,"九":9};
+  // よくある誤認識（吸収）
+  const ALIAS_MAP = {
+    "はっち":8,"はちい":8,"はちぃ":8,"ぱち":8,"はっ":8,
+    "なない":7,"ななあ":7,"しちい":7,"しちぃ":7,
+    "よおん":4,"しー":4,"よーん":4,
+    "ろっ":6,"ろっく":6,
+    "じゅ":10,"じゅー":10
+  };
   function normalizeKana(s){ return String(s||"").toLowerCase().replace(/\s+/g,"").replace(/ー/g,"").replace(/[，,。．.！!？?]/g,""); }
   function parseNumberJapanese(input){
     const raw = normalizeKana(input);
@@ -603,6 +770,11 @@
     const m = raw.match(/(\d{1,3})/);
     if (m){ const v = Number(m[1]); return Number.isFinite(v)? v : null; }
     if (raw in DIGIT_MAP) return DIGIT_MAP[raw];
+    if (raw in ALIAS_MAP) return ALIAS_MAP[raw];
+    // 1桁っぽい誤認識（正規表現）
+    if (/^(はっ?ち)$/.test(raw)) return 8;
+    if (/^(しち|なな)$/.test(raw)) return 7;
+    if (/^(よん|し)$/.test(raw)) return 4;
 
     const tensWords = [
       {k:["じゅう","十"], v:10},
@@ -787,6 +959,7 @@
 
   function startGame(){
     ensureAudioCtx();
+    initMic().then(()=>{ if (running && !paused) startMicMeter(); }).catch(()=>{});
     stopRecognition();
     window.speechSynthesis && window.speechSynthesis.cancel();
 
@@ -828,6 +1001,7 @@
     stopRecognition();
     stopTimers();
     window.speechSynthesis && window.speechSynthesis.cancel();
+    stopMicMeter();
     setPlayStopIcon();
     setMascot(rand(FACES), "<b>ストップ！</b> ▶で さいかい");
   }
@@ -837,6 +1011,7 @@
     paused = false;
     lockedNext = false;
     setPlayStopIcon();
+    initMic().then(()=>{ if (running && !paused) startMicMeter(); }).catch(()=>{});
     setMascot("🤖", "<b>クック先生：</b> さいかい！");
     startTimer();
     if (recognitionOK) setTimeout(()=>{ if (running && !paused && !lockedNext) startRecognition(); }, 180);
@@ -852,6 +1027,7 @@
 
   function startTimer(){
     stopTimers();
+    wantListen = true;
     tStart = performance.now();
     lastShownSec = LIMIT_SEC;
     setSegsOn(LIMIT_SEC);
@@ -907,6 +1083,7 @@
 
   function lockAndAdvance(delayMs){
     lockedNext = true;
+    wantListen = false;
     stopRecognition();
     stopTimers();
     setTimeout(()=>{ if (running && !paused) nextQuestion(); }, delayMs);
@@ -941,6 +1118,7 @@
     stopRecognition();
     stopTimers();
     window.speechSynthesis && window.speechSynthesis.cancel();
+    stopMicMeter();
 
     playCheerAndClap();
     resultLine.textContent = `⭕ ${good} / ${totalQuestions}　（❌ ${bad}）`;
@@ -953,6 +1131,7 @@
     running = false; paused = true; lockedNext = true;
     stopRecognition(); stopTimers();
     window.speechSynthesis && window.speechSynthesis.cancel();
+    stopMicMeter();
     setScreen("course");
   });
 
@@ -969,6 +1148,7 @@
     running = false; paused = true; lockedNext = true;
     stopRecognition(); stopTimers();
     window.speechSynthesis && window.speechSynthesis.cancel();
+    stopMicMeter();
     selectedCourse = null; selectedDans = new Set(); starOn = false; randCount = 10;
     setScreen("course");
   }
@@ -992,6 +1172,9 @@
 
   setupRecognition();
   if (!recognitionOK) fallbackQuiz.classList.remove("hidden");
+  if (!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)){
+    try{ micMeter && (micMeter.style.display="none"); }catch{}
+  }
 
   // Navigation
   courseAsc.addEventListener("click", ()=> openDanScreen(COURSE.ASC));

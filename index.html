@@ -160,11 +160,13 @@
       gap: 10px;
     }
     .courseBtn{
-      padding: 18px 10px;
-      border-radius: 20px;
-      font-size: 16px;
+      padding: 26px 12px;
+      border-radius: 24px;
+      font-size: 20px;
       line-height:1.1;
-      background: rgba(255,255,255,.10);
+      background: linear-gradient(135deg, rgba(239,68,68,.78), rgba(245,158,11,.22));
+      border-color: rgba(239,68,68,.62);
+      box-shadow: 0 14px 40px rgba(239,68,68,.16);
     }
     .courseBtn .mini{ display:block; margin-top:8px; font-size: 12px; color: rgba(255,255,255,.70); font-weight: 900; }
 
@@ -315,9 +317,9 @@
           <div class="panel">
             <h2>ゲームをえらぶ <span class="subtitle">（まず ここ）</span></h2>
             <div class="courseGrid">
-              <button class="btn courseBtn" id="courseAsc">のぼり九九<span class="mini">だんを えらんで はじめる</span></button>
-              <button class="btn courseBtn" id="courseDesc">くだり九九<span class="mini">だんを えらんで はじめる</span></button>
-              <button class="btn courseBtn" id="courseRand">ばらばら九九<span class="mini">もんすうを えらんで はじめる</span></button>
+              <button class="btn courseBtn" id="courseAsc">のぼり九九</button>
+              <button class="btn courseBtn" id="courseDesc">くだり九九</button>
+              <button class="btn courseBtn" id="courseRand">ばらばら九九</button>
             </div>
           </div>
         </div>
@@ -325,9 +327,7 @@
         <!-- DAN -->
         <div class="screen hidden" id="screenDan">
           <div class="panel">
-            <h2 id="danTitle">だんを えらぶ</h2>
-
-            <div id="danPanelAscDesc" class="hidden">
+<div id="danPanelAscDesc" class="hidden">
               <div class="choiceGrid9" id="danChoices"></div>
               <div class="row" style="margin-top:10px;">
                 <div class="rowLeft">
@@ -536,6 +536,9 @@
   let micOK = false;
 
   async function initMic(){
+    // SpeechRecognitionと同時にgetUserMediaを使うと、端末によってはマイクが競合して認識が止まる。
+    // SpeechRecognitionが使える環境では getUserMedia を使わず、擬似メーターに切り替える。
+    if (recognitionOK) { micOK = false; return false; }
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return false;
     if (micStream) return true;
     try{
@@ -568,8 +571,10 @@
   function startMicMeter(){
     if (!micOK || !micAnalyser || !micData) return;
     stopMicMeter();
+    stopPseudoMic();
     const loop = ()=>{
-      if (!running || paused){ stopMicMeter(); return; }
+      if (!running || paused){ stopMicMeter();
+    stopPseudoMic(); return; }
       try{
         micAnalyser.getByteTimeDomainData(micData);
         // RMS
@@ -588,6 +593,24 @@
       micRAF = requestAnimationFrame(loop);
     };
     micRAF = requestAnimationFrame(loop);
+  }
+
+  // SpeechRecognition用の擬似メーター（マイク競合を避けるため）
+  let pseudoMicTimer = null;
+  function startPseudoMic(){
+    stopPseudoMic();
+    if (!micFill) return;
+    pseudoMicTimer = setInterval(()=>{
+      if (!running || paused){ stopPseudoMic(); return; }
+      const base = recRunning ? 55 : 16;
+      const wobble = recRunning ? (Math.random()*18) : (Math.random()*8);
+      micFill.style.width = Math.round(Math.min(100, base + wobble)) + "%";
+    }, 90);
+  }
+  function stopPseudoMic(){
+    if (pseudoMicTimer) clearInterval(pseudoMicTimer);
+    pseudoMicTimer = null;
+    if (micFill) micFill.style.width = "0%";
   }
 
   function playTone(freq, duration, {volume=0.12, type="sine", attack=0.008, release=0.03} = {}){
@@ -801,6 +824,15 @@
       rec.start();
     }catch{}
   }
+  async function primeRecognition(){
+    if (!recognitionOK) return;
+    try{
+      wantListen = true;
+      rec.start();
+      await new Promise(r=>setTimeout(r, 220));
+      rec.abort && rec.abort();
+    }catch{}
+  }
 
   // ---------- Answer parsing ----------
   const DIGIT_MAP = {"ぜろ":0,"れい":0,"0":0,"〇":0,"零":0,"いち":1,"1":1,"一":1,"に":2,"2":2,"二":2,"さん":3,"3":3,"三":3,"し":4,"よん":4,"4":4,"四":4,"ご":5,"5":5,"五":5,"ろく":6,"6":6,"六":6,"なな":7,"しち":7,"7":7,"七":7,"はち":8,"8":8,"八":8,"きゅう":9,"く":9,"9":9,"九":9};
@@ -953,9 +985,13 @@
   }
 
   function goCourse(){
+    running = false; paused = true; lockedNext = true;
     stopRecognition();
     stopTimers();
     window.speechSynthesis && window.speechSynthesis.cancel();
+    stopMicMeter();
+    stopPseudoMic();
+    recreateRecognition();
     setScreen("course");
   }
   backToCourse.addEventListener("click", goCourse);
@@ -1033,6 +1069,7 @@
 
   function startGame(){
     ensureAudioCtx();
+    primeRecognition();
     stopRecognition();
     window.speechSynthesis && window.speechSynthesis.cancel();
 
@@ -1075,6 +1112,7 @@
     stopTimers();
     window.speechSynthesis && window.speechSynthesis.cancel();
     stopMicMeter();
+    stopPseudoMic();
     setPlayStopIcon();
     setMascot(rand(FACES), "<b>ストップ！</b> ▶で さいかい");
   }
@@ -1100,7 +1138,8 @@
   function startTimer(){
     stopTimers();
     wantListen = true;
-    initMic().then(()=>{ if (running && !paused) startMicMeter(); }).catch(()=>{});
+    if (recognitionOK){ startPseudoMic(); }
+    else { initMic().then(()=>{ if (running && !paused) startMicMeter(); }).catch(()=>{}); }
     tStart = performance.now();
     lastShownSec = LIMIT_SEC;
     setSegsOn(LIMIT_SEC);
@@ -1193,6 +1232,7 @@
     stopTimers();
     window.speechSynthesis && window.speechSynthesis.cancel();
     stopMicMeter();
+    stopPseudoMic();
 
     playCheerAndClap();
     resultLine.textContent = `⭕ ${good} / ${totalQuestions}　（❌ ${bad}）`;
@@ -1206,6 +1246,8 @@
     stopRecognition(); stopTimers();
     window.speechSynthesis && window.speechSynthesis.cancel();
     stopMicMeter();
+    stopPseudoMic();
+    recreateRecognition();
     setScreen("course");
   });
 
@@ -1223,7 +1265,9 @@
     stopRecognition(); stopTimers();
     window.speechSynthesis && window.speechSynthesis.cancel();
     stopMicMeter();
+    stopPseudoMic();
     selectedCourse = null; selectedDans = new Set(); starOn = false; randCount = 10;
+    recreateRecognition();
     setScreen("course");
   }
   resetBtn.addEventListener("click", resetAll);
@@ -1243,6 +1287,13 @@
     }
   }
   renderKeypad();
+
+  function recreateRecognition(){
+    if (!recognitionOK) return;
+    try{ rec && rec.abort && rec.abort(); }catch{}
+    rec = null;
+    setupRecognition();
+  }
 
   setupRecognition();
   if (!recognitionOK) fallbackQuiz.classList.remove("hidden");

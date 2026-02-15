@@ -1,0 +1,947 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>クック先生の九九トレーニング v15</title>
+  <style>
+    :root{
+      --bg1:#0b1220; --bg2:#1a2a3a;
+      --glass: rgba(255,255,255,.08);
+      --glass2: rgba(255,255,255,.12);
+      --stroke: rgba(255,255,255,.14);
+      --text:#f3f6ff; --muted:rgba(243,246,255,.72);
+      --red1: rgba(239,68,68,.86);
+      --red2: rgba(245,158,11,.22);
+      --shadow: 0 18px 60px rgba(0,0,0,.35);
+      --r: 26px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,
+        "Noto Sans JP","Hiragino Kaku Gothic ProN","Meiryo",sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(1200px 800px at 20% 10%, rgba(56,189,248,.20), transparent 60%),
+        radial-gradient(900px 700px at 80% 0%, rgba(34,197,94,.12), transparent 55%),
+        radial-gradient(900px 700px at 50% 110%, rgba(244,63,94,.12), transparent 55%),
+        linear-gradient(160deg, var(--bg1), var(--bg2));
+      overflow:hidden;
+    }
+    .wrap{
+      height:100%;
+      max-width: 520px;
+      margin:0 auto;
+      padding: 14px 14px 18px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+    header{
+      display:flex; align-items:center; justify-content:space-between;
+      padding: 10px 12px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
+      border: 1px solid var(--stroke);
+      box-shadow: var(--shadow);
+    }
+    .brand{
+      display:flex; gap:10px; align-items:center;
+      min-width:0;
+    }
+    .logo{
+      width:44px;height:44px;border-radius:14px;
+      background: radial-gradient(circle at 30% 30%, rgba(56,189,248,.85), rgba(34,197,94,.65));
+      border: 1px solid rgba(255,255,255,.18);
+      box-shadow: 0 12px 30px rgba(0,0,0,.22);
+      flex:0 0 auto;
+    }
+    .title{
+      display:flex; flex-direction:column; min-width:0;
+    }
+    .title b{font-size:18px; line-height:1.05; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+    .title span{font-size:12px; color:var(--muted); margin-top:3px}
+    .iconBtns{display:flex; gap:10px}
+    .iconBtn{
+      width:46px;height:46px;border-radius:16px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid var(--stroke);
+      display:grid;place-items:center;
+      box-shadow: 0 10px 26px rgba(0,0,0,.22);
+      user-select:none;
+    }
+    .iconBtn:active{transform: translateY(1px)}
+    .iconBtn svg{opacity:.92}
+
+    .card{
+      flex:1;
+      border-radius: var(--r);
+      background: linear-gradient(160deg, rgba(255,255,255,.09), rgba(255,255,255,.05));
+      border: 1px solid var(--stroke);
+      box-shadow: var(--shadow);
+      padding: 14px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      overflow:hidden;
+    }
+
+    .screen{display:none; height:100%}
+    .screen.on{display:flex; flex-direction:column; gap:12px; height:100%}
+
+    .bigGrid{
+      display:flex; flex-direction:column; gap:12px;
+      padding: 4px 2px;
+    }
+    .bigBtn{
+      width:100%;
+      padding: 22px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.16);
+      background: linear-gradient(135deg, var(--red1), var(--red2));
+      box-shadow: 0 18px 60px rgba(239,68,68,.18);
+      color: white;
+      font-weight: 900;
+      font-size: 28px;
+      letter-spacing: .06em;
+      user-select:none;
+    }
+    .bigBtn:active{transform: translateY(1px)}
+    .subRow{display:flex; gap:10px; align-items:center; justify-content:space-between}
+    .pill{
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.07);
+      border: 1px solid var(--stroke);
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .tiles{
+      display:grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+    }
+    .tile{
+      padding: 14px 0;
+      border-radius: 18px;
+      background: rgba(255,255,255,.07);
+      border: 1px solid var(--stroke);
+      color: var(--text);
+      font-weight: 900;
+      font-size: 18px;
+      text-align:center;
+      user-select:none;
+    }
+    .tile:active{transform: translateY(1px)}
+    .tile.on{
+      outline: 3px solid rgba(56,189,248,.40);
+      background: rgba(56,189,248,.18);
+      border-color: rgba(56,189,248,.28);
+    }
+    .tile.star{font-size:18px}
+    .tile.star small{display:block; font-size:10px; color:rgba(255,255,255,.80); margin-top:3px; font-weight:800; letter-spacing:.02em}
+    .actions{
+      margin-top:auto;
+      display:flex; gap:12px; align-items:center; justify-content:space-between;
+    }
+    .ghostBtn{
+      flex:1;
+      padding: 16px 14px;
+      border-radius: 22px;
+      background: rgba(255,255,255,.07);
+      border: 1px solid var(--stroke);
+      color: var(--text);
+      font-weight: 900;
+      font-size: 16px;
+      user-select:none;
+      display:flex; align-items:center; justify-content:center; gap:10px;
+    }
+    .ghostBtn:active{transform: translateY(1px)}
+    .playBtn{
+      flex:1.25;
+      padding: 16px 14px;
+      border-radius: 22px;
+      background: linear-gradient(135deg, rgba(239,68,68,.92), rgba(245,158,11,.18));
+      border: 1px solid rgba(239,68,68,.42);
+      color: #fff;
+      font-weight: 1000;
+      font-size: 16px;
+      user-select:none;
+      display:flex; align-items:center; justify-content:center; gap:10px;
+      box-shadow: 0 18px 60px rgba(239,68,68,.16);
+    }
+    .playBtn:active{transform: translateY(1px)}
+    .muted{color:var(--muted)}
+
+    .mascotRow{display:flex; gap:12px; align-items:center}
+    .mascot{
+      width:58px;height:58px;border-radius: 18px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid var(--stroke);
+      display:grid; place-items:center;
+      font-size: 28px;
+      box-shadow: 0 14px 34px rgba(0,0,0,.22);
+      flex:0 0 auto;
+    }
+    .bubble{
+      flex:1;
+      border-radius: 18px;
+      background: rgba(255,255,255,.07);
+      border: 1px solid var(--stroke);
+      padding: 10px 12px;
+      color: var(--muted);
+      line-height: 1.25;
+      font-size: 13px;
+      min-height: 58px;
+      display:flex; align-items:center;
+    }
+    .qBox{
+      border-radius: var(--r);
+      background: rgba(0,0,0,.10);
+      border: 1px solid rgba(255,255,255,.10);
+      padding: 14px;
+      display:flex; flex-direction:column; gap:10px;
+    }
+    .qMath{
+      font-size: 44px;
+      font-weight: 1000;
+      letter-spacing: .03em;
+      text-align:center;
+    }
+    .qYomi{
+      font-size: 18px;
+      font-weight: 900;
+      text-align:center;
+      color: rgba(255,255,255,.85);
+      letter-spacing: .04em;
+    }
+    .meterRow{display:flex; align-items:center; justify-content:center}
+    .ticks{
+      display:grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      width: 220px;
+      max-width: 72vw;
+    }
+    .tick{
+      height: 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.16);
+      border: 1px solid rgba(255,255,255,.12);
+    }
+    .tick.off{opacity:.20}
+    .okng{
+      display:flex; gap:10px; align-items:center; justify-content:center;
+      margin-top: 6px;
+    }
+    .iconCircle{
+      width:44px;height:44px;border-radius: 16px;
+      background: rgba(255,255,255,.07);
+      border: 1px solid var(--stroke);
+      display:grid;place-items:center;
+      font-size: 22px;
+      box-shadow: 0 12px 30px rgba(0,0,0,.18);
+      user-select:none;
+    }
+    .countText{
+      font-weight: 1000;
+      font-size: 18px;
+      color: rgba(255,255,255,.86);
+      min-width: 64px;
+      text-align:center;
+    }
+    .playStop{
+      position: absolute;
+      right: 18px;
+      top: 82px;
+      width: 56px;height:56px;border-radius: 18px;
+      background: rgba(255,255,255,.09);
+      border: 1px solid var(--stroke);
+      box-shadow: 0 16px 46px rgba(0,0,0,.28);
+      display:grid;place-items:center;
+      user-select:none;
+      z-index: 5;
+    }
+    .playStop:active{transform: translateY(1px)}
+    .hint{ text-align:center; color: var(--muted); font-size: 12px; margin-top: 4px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="logo"></div>
+        <div class="title">
+          <b>クック先生の九九トレーニング</b>
+          <span>がくしゅうじゃない。ゲームだ。</span>
+        </div>
+      </div>
+      <div class="iconBtns">
+        <div class="iconBtn" id="btnSound" title="サウンド">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M11 5 6 9H3v6h3l5 4V5Z" stroke="white" stroke-width="2" stroke-linejoin="round"/><path d="M15.5 8.5a4 4 0 0 1 0 7" stroke="white" stroke-width="2" stroke-linecap="round"/><path d="M17.5 6a7 7 0 0 1 0 12" stroke="white" stroke-width="2" stroke-linecap="round" opacity=".7"/></svg>
+        </div>
+        <div class="iconBtn" id="btnReload" title="リロード">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M21 12a9 9 0 1 1-3-6.7" stroke="white" stroke-width="2" stroke-linecap="round"/><path d="M21 4v6h-6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+    </header>
+
+    <div class="card">
+      <div class="screen on" id="screenCourse">
+        <div class="bigGrid">
+          <button class="bigBtn" id="courseUp">のぼり九九</button>
+          <button class="bigBtn" id="courseDown">くだり九九</button>
+          <button class="bigBtn" id="courseRandom">ばらばら九九</button>
+        </div>
+        <div class="subRow">
+          <div class="pill">v15</div>
+          <div class="pill" id="micPill">🎤 …</div>
+        </div>
+      </div>
+
+      <div class="screen" id="screenDan">
+        <div class="mascotRow">
+          <div class="mascot">🤖</div>
+          <div class="bubble">だん を えらんでね</div>
+        </div>
+        <div class="tiles" id="danTiles"></div>
+        <div class="actions">
+          <button class="ghostBtn" id="backCourse1">もどる</button>
+          <button class="playBtn" id="startFromDan"><span>▶</span><span>はじめる</span></button>
+        </div>
+      </div>
+
+      <div class="screen" id="screenCount">
+        <div class="mascotRow">
+          <div class="mascot">🤖</div>
+          <div class="bubble">もんすう を えらんでね</div>
+        </div>
+        <div class="tiles" id="countTiles"></div>
+        <div class="actions">
+          <button class="ghostBtn" id="backCourse2">もどる</button>
+          <button class="playBtn" id="startFromCount"><span>▶</span><span>はじめる</span></button>
+        </div>
+      </div>
+
+      <div class="screen" id="screenGame" style="position:relative;">
+        <div class="playStop" id="playStopBtn" title="スタート / とめる"></div>
+
+        <div class="mascotRow">
+          <div class="mascot">🤖</div>
+          <div class="bubble" id="bubbleGame">いくよ！</div>
+        </div>
+
+        <div class="qBox">
+          <div class="qMath" id="qMath">- × -</div>
+          <div class="qYomi" id="qYomi">-</div>
+          <div class="meterRow">
+            <div class="ticks" id="ticks"></div>
+          </div>
+          <div class="okng">
+            <div class="iconCircle" title="せいかい">⭕</div>
+            <div class="countText" id="okCount">0</div>
+            <div class="iconCircle" title="はずれ">❌</div>
+            <div class="countText" id="ngCount">0</div>
+          </div>
+          <div class="hint">こえで こたえてね</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+(() => {
+  "use strict";
+
+  const $ = (sel, el=document) => el.querySelector(sel);
+  const screenCourse = $("#screenCourse");
+  const screenDan = $("#screenDan");
+  const screenCount = $("#screenCount");
+  const screenGame = $("#screenGame");
+
+  const courseUpBtn = $("#courseUp");
+  const courseDownBtn = $("#courseDown");
+  const courseRandomBtn = $("#courseRandom");
+
+  const danTiles = $("#danTiles");
+  const countTiles = $("#countTiles");
+  const backCourse1 = $("#backCourse1");
+  const backCourse2 = $("#backCourse2");
+  const startFromDan = $("#startFromDan");
+  const startFromCount = $("#startFromCount");
+
+  const playStopBtn = $("#playStopBtn");
+  const qMath = $("#qMath");
+  const qYomi = $("#qYomi");
+  const ticksEl = $("#ticks");
+  const okCountEl = $("#okCount");
+  const ngCountEl = $("#ngCount");
+  const bubbleGame = $("#bubbleGame");
+  const micPill = $("#micPill");
+
+  const btnSound = $("#btnSound");
+  const btnReload = $("#btnReload");
+
+  function setScreen(name){
+    for (const el of [screenCourse, screenDan, screenCount, screenGame]) el.classList.remove("on");
+    if (name==="course") screenCourse.classList.add("on");
+    if (name==="dan") screenDan.classList.add("on");
+    if (name==="count") screenCount.classList.add("on");
+    if (name==="game") screenGame.classList.add("on");
+  }
+
+  // Audio
+  let audioCtx = null;
+  let sfxOn = true;
+  function ensureAudio(){
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === "suspended") audioCtx.resume().catch(()=>{});
+  }
+  function beep({freq=880, dur=0.06, vol=0.06, type="sine"}={}){
+    if (!sfxOn) return;
+    ensureAudio();
+    const t0 = audioCtx.currentTime;
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = type;
+    o.frequency.setValueAtTime(freq, t0);
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(Math.max(0.0001, vol), t0+0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0+dur);
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(t0); o.stop(t0+dur+0.02);
+  }
+  function buzz(){
+    if (!sfxOn) return;
+    ensureAudio();
+    const t0 = audioCtx.currentTime;
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = "square";
+    o.frequency.setValueAtTime(160, t0);
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(0.13, t0+0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0+0.42);
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(t0); o.stop(t0+0.5);
+  }
+  function pingpong(){
+    if (!sfxOn) return;
+    const seq = [
+      {f:880, d:0.08, v:0.13},
+      {f:988, d:0.08, v:0.13},
+      {f:784, d:0.18, v:0.12},
+    ];
+    let delay = 0;
+    for (const s of seq){
+      setTimeout(()=>beep({freq:s.f, dur:s.d, vol:s.v, type:"sine"}), delay);
+      delay += Math.round((s.d+0.05)*1000);
+    }
+  }
+  function applauseAndCheer(){
+    if (!sfxOn) return;
+    ensureAudio();
+    const t0 = audioCtx.currentTime;
+
+    const bufferSize = Math.floor(audioCtx.sampleRate * 0.9);
+    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i=0;i<bufferSize;i++){
+      data[i] = (Math.random()*2-1) * (Math.random() < 0.5 ? 0.6 : 0.3);
+    }
+    const noise = audioCtx.createBufferSource();
+    noise.buffer = buffer;
+    const bp = audioCtx.createBiquadFilter();
+    bp.type = "bandpass";
+    bp.frequency.setValueAtTime(1600, t0);
+    bp.Q.setValueAtTime(0.8, t0);
+    const ng = audioCtx.createGain();
+    ng.gain.setValueAtTime(0.0001, t0);
+    ng.gain.exponentialRampToValueAtTime(0.18, t0+0.02);
+    ng.gain.exponentialRampToValueAtTime(0.0001, t0+0.85);
+    noise.connect(bp); bp.connect(ng); ng.connect(audioCtx.destination);
+    noise.start(t0); noise.stop(t0+0.92);
+
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = "triangle";
+    o.frequency.setValueAtTime(340, t0);
+    o.frequency.exponentialRampToValueAtTime(820, t0+0.65);
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(0.07, t0+0.05);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0+0.85);
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(t0); o.stop(t0+0.9);
+  }
+
+  btnSound.addEventListener("click", ()=>{
+    sfxOn = !sfxOn;
+    ensureAudio();
+    btnSound.style.opacity = sfxOn ? "1" : ".45";
+  });
+  btnReload.addEventListener("click", ()=>location.reload());
+
+  // Speech
+  function speakAsync(text, {rate=1.22, pitch=1.05, volume=1.0}={}){
+    return new Promise((resolve)=>{
+      if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) return resolve(false);
+      try{
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = "ja-JP";
+        u.rate = rate; u.pitch = pitch; u.volume = volume;
+        u.onend = ()=>resolve(true);
+        u.onerror = ()=>resolve(false);
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(u);
+      }catch{ resolve(false); }
+    });
+  }
+
+  // KUKU
+  const KUKU = [];
+  const yomiByA = {
+    1: ["いんいちが","いんにが","いんさんが","いんしが","いんごが","いんろくが","いんしちが","いんはちが","いんくが"],
+    2: ["にいちが","ににんが","にさんが","にしが","にご","にろく","にしち","にはち","にく"],
+    3: ["さんいちが","さんにが","さざんが","さんし","さんご","さぶろく","さんしち","さんぱ","さんく"],
+    4: ["しいちが","しにが","しさん","しし","しご","しろく","ししち","しは","しく"],
+    5: ["ごいちが","ごに","ごさん","ごし","ごご","ごろく","ごしち","ごは","ごっく"],
+    6: ["ろくいちが","ろくに","ろくさん","ろくし","ろくご","ろくろく","ろくしち","ろくは","ろっく"],
+    7: ["しちいちが","しちに","しちさん","しちし","しちご","しちろく","しちしち","しちは","しちく"],
+    8: ["はちいちが","はちに","はちさん","はちし","はちご","はちろく","はちしち","はっぱ","はっく"],
+    9: ["くいちが","くに","くさん","くし","くご","くろく","くしち","くは","くく"],
+  };
+  const ansByA = {
+    1: ["いち","に","さん","し","ご","ろく","しち","はち","く"],
+    2: ["に","し","ろく","はち","じゅう","じゅうに","じゅうし","じゅうろく","じゅうはち"],
+    3: ["さん","ろく","く","じゅうに","じゅうご","じゅうはち","にじゅういち","にじゅうし","にじゅうしち"],
+    4: ["し","はち","じゅうに","じゅうろく","にじゅう","にじゅうし","にじゅうはち","さんじゅうに","さんじゅうろく"],
+    5: ["ご","じゅう","じゅうご","にじゅう","にじゅうご","さんじゅう","さんじゅうご","しじゅう","しじゅうご"],
+    6: ["ろく","じゅうに","じゅうはち","にじゅうし","さんじゅう","さんじゅうろく","しじゅうに","しじゅうはち","ごじゅうし"],
+    7: ["しち","じゅうし","にじゅういち","にじゅうはち","さんじゅうご","しじゅうに","しじゅうく","ごじゅうろく","ろくじゅうさん"],
+    8: ["はち","じゅうろく","にじゅうし","さんじゅうに","しじゅう","しじゅうはち","ごじゅうろく","ろくじゅうし","しちじゅうに"],
+    9: ["く","じゅうはち","にじゅうしち","さんじゅうろく","しじゅうご","ごじゅうし","ろくじゅうさん","しちじゅうに","はちじゅういち"],
+  };
+  for (let a=1;a<=9;a++){
+    for (let b=1;b<=9;b++){
+      const chant = `${yomiByA[a][b-1]}　${ansByA[a][b-1]}`;
+      KUKU.push({a,b,chant,answer:a*b});
+    }
+  }
+
+  // Selection state
+  let selectedCourse = null; // up|down|random
+  let selectedDans = new Set();
+  let starOn = false;
+  let selectedCount = 10;
+
+  function buildDanTiles(){
+    danTiles.innerHTML = "";
+    for (let i=1;i<=9;i++){
+      const btn = document.createElement("div");
+      btn.className = "tile";
+      btn.textContent = String(i);
+      btn.dataset.dan = String(i);
+      btn.addEventListener("click", ()=>{
+        ensureAudio();
+        if (selectedDans.has(i)) selectedDans.delete(i); else selectedDans.add(i);
+        btn.classList.toggle("on", selectedDans.has(i));
+      });
+      danTiles.appendChild(btn);
+    }
+    const star = document.createElement("div");
+    star.className = "tile star";
+    star.innerHTML = "★<small>ばらばら</small>";
+    star.addEventListener("click", ()=>{
+      ensureAudio();
+      starOn = !starOn;
+      star.classList.toggle("on", starOn);
+    });
+    danTiles.appendChild(star);
+  }
+
+  function buildCountTiles(){
+    countTiles.innerHTML = "";
+    const counts = [10,20,30,40,50];
+    for (const c of counts){
+      const btn = document.createElement("div");
+      btn.className = "tile";
+      btn.textContent = String(c);
+      btn.dataset.count = String(c);
+      btn.addEventListener("click", ()=>{
+        ensureAudio();
+        selectedCount = c;
+        for (const el of countTiles.querySelectorAll(".tile")) el.classList.remove("on");
+        btn.classList.add("on");
+      });
+      countTiles.appendChild(btn);
+    }
+    const first = countTiles.querySelector('.tile[data-count="10"]');
+    if (first) first.classList.add("on");
+  }
+
+  buildDanTiles();
+  buildCountTiles();
+
+  // Game state
+  const LIMIT_MS = 5000;
+  let running = false;
+  let paused = true;
+  let locked = false;
+  let tStart = 0;
+  let tickTimer = null;
+  let tickInterval = null;
+  let ok = 0, ng = 0;
+  let pool = [];
+  let idx = 0;
+  let current = null;
+
+  function initTicks(){
+    ticksEl.innerHTML = "";
+    for (let i=0;i<5;i++){
+      const d = document.createElement("div");
+      d.className = "tick";
+      ticksEl.appendChild(d);
+    }
+  }
+  initTicks();
+
+  function setTicks(secLeft){
+    const ticks = [...ticksEl.children];
+    for (let i=0;i<5;i++){
+      const on = (i < secLeft);
+      ticks[i].classList.toggle("off", !on);
+    }
+  }
+  function updateScore(){
+    okCountEl.textContent = String(ok);
+    ngCountEl.textContent = String(ng);
+  }
+  function stopTimers(){
+    if (tickTimer){ clearTimeout(tickTimer); tickTimer = null; }
+    if (tickInterval){ clearInterval(tickInterval); tickInterval = null; }
+  }
+
+  // Recognition
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let recognitionOK = !!SR;
+  let rec = null;
+  let recRunning = false;
+  let wantListen = false;
+  let lastRecStartAt = 0;
+  let recRestartTO = null;
+  let restartBackoff = 140;
+
+  function resetBackoff(){ restartBackoff = 140; }
+  function setupRecognition(){
+    if (!recognitionOK) return;
+    rec = new SR();
+    rec.lang = "ja-JP";
+    rec.interimResults = false;
+    rec.maxAlternatives = 10;
+    rec.continuous = true;
+
+    rec.onstart = () => { recRunning = true; resetBackoff(); };
+    rec.onend = () => { recRunning = false; maybeRestart(); };
+    rec.onerror = () => { recRunning = false; maybeRestart(); };
+    rec.onresult = (ev) => {
+      recRunning = false;
+      if (!running || paused || locked) return;
+      const res = ev.results[ev.results.length-1];
+      const alts = [];
+      for (let i=0;i<Math.min(res.length, 10); i++){
+        alts.push(String(res[i].transcript||"").trim());
+      }
+      const picked = pickBestAnswer(alts);
+      if (picked == null) return;
+      handleAnswer(picked);
+    };
+  }
+  setupRecognition();
+
+  function startRecognition(){
+    if (!recognitionOK || !rec) return;
+    if (!wantListen || paused || locked || !running) return;
+    const now = performance.now();
+    if (now - lastRecStartAt < 350) return;
+    try{
+      lastRecStartAt = now;
+      rec.start();
+    }catch{}
+  }
+  function stopRecognition(){
+    wantListen = false;
+    if (recRestartTO){ clearTimeout(recRestartTO); recRestartTO = null; }
+    try{ rec && rec.stop(); }catch{}
+  }
+  function maybeRestart(){
+    if (!recognitionOK || !rec) return;
+    if (!running || paused || locked) return;
+    if (!wantListen || recRunning) return;
+    const left = LIMIT_MS - (performance.now() - tStart);
+    if (left <= 650) return;
+    const now = performance.now();
+    if (now - lastRecStartAt < 420) return;
+
+    if (recRestartTO) clearTimeout(recRestartTO);
+    recRestartTO = setTimeout(()=>{
+      if (!running || paused || locked || !wantListen || recRunning) return;
+      startRecognition();
+    }, restartBackoff);
+    restartBackoff = Math.min(520, restartBackoff + 60);
+  }
+  async function primeRecognition(){
+    if (!recognitionOK || !rec) return;
+    try{
+      wantListen = true;
+      rec.start();
+      await new Promise(r=>setTimeout(r, 200));
+      rec.abort && rec.abort();
+    }catch{}
+  }
+
+  // Answer parsing
+  const WORD = {
+    "いち":1,"いっ":1,"ひと":1,
+    "に":2,"さん":3,"し":4,"よん":4,"ご":5,"ろく":6,"しち":7,"なな":7,"はち":8,"く":9,"きゅう":9,
+    "じゅう":10,"じゅういち":11,"じゅうに":12,"じゅうさん":13,"じゅうし":14,"じゅうよん":14,"じゅうご":15,"じゅうろく":16,
+    "じゅうしち":17,"じゅうなな":17,"じゅうはち":18,"じゅうく":19,"じゅうきゅう":19,
+    "にじゅう":20,"にじゅういち":21,"にじゅうに":22,"にじゅうさん":23,"にじゅうし":24,"にじゅうご":25,"にじゅうろく":26,"にじゅうしち":27,
+    "にじゅうはち":28,"にじゅうく":29,"さんじゅう":30,"さんじゅうに":32,"さんじゅうご":35,"さんじゅうろく":36,
+    "しじゅう":40,"しじゅうに":42,"しじゅうご":45,"しじゅうはち":48,"ごじゅう":50,"ごじゅうし":54,"ごじゅうろく":56,
+    "ろくじゅうさん":63,"ろくじゅうし":64,"しちじゅうに":72,"はちじゅういち":81
+  };
+  const ALIAS = {"はっぱ":8,"はっく":72,"ろっく":6,"ごっく":5,"さぶろく":18,"にく":18,"さんく":27,"しく":36};
+  function normalize(str){
+    return (str||"").toString().trim().replace(/[　\s]+/g,"").replace(/[。，．,]/g,"").toLowerCase();
+  }
+  function parseAnswer(text){
+    const raw = normalize(text);
+    if (!raw) return null;
+    if (raw in ALIAS) return ALIAS[raw];
+    if (raw in WORD) return WORD[raw];
+    const m = raw.match(/\d{1,2}/);
+    if (m){ const n = Number(m[0]); if (Number.isFinite(n)) return n; }
+    for (const k of Object.keys(WORD).sort((a,b)=>b.length-a.length)){
+      if (k.length>=2 && raw.includes(k)) return WORD[k];
+    }
+    return null;
+  }
+  function pickBestAnswer(alts){
+    for (const t of alts){
+      const n = parseAnswer(t);
+      if (n != null) return n;
+    }
+    return null;
+  }
+
+  // Pool
+  function shuffle(arr){
+    for (let i=arr.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [arr[i],arr[j]] = [arr[j],arr[i]];
+    }
+    return arr;
+  }
+  function buildPool(){
+    if (selectedCourse === "random"){
+      return shuffle([...KUKU]).slice(0, selectedCount);
+    }
+    const dans = [...selectedDans].sort((a,b)=>a-b);
+    if (selectedCourse === "down") dans.reverse();
+    let items = [];
+    for (const a of dans){
+      const row = KUKU.filter(x => x.a === a).sort((x,y)=>x.b-y.b);
+      items.push(...row);
+    }
+    if (starOn) items = shuffle(items);
+    return items;
+  }
+
+  function setPlayStopIcon(){
+    playStopBtn.innerHTML = paused
+      ? '<svg width="26" height="26" viewBox="0 0 24 24"><path d="M9 6v12l10-6-10-6Z" fill="white"/></svg>'
+      : '<svg width="26" height="26" viewBox="0 0 24 24"><path d="M7 7h4v10H7V7Zm6 0h4v10h-4V7Z" fill="white"/></svg>';
+  }
+  setPlayStopIcon();
+
+  function startQuestionTimer(){
+    stopTimers();
+    tStart = performance.now();
+    wantListen = true;
+    setTicks(5);
+
+    let secLeft = 5;
+    tickInterval = setInterval(()=>{
+      if (!running || paused || locked){ stopTimers(); return; }
+      secLeft -= 1;
+      if (secLeft >= 0){
+        beep({freq: 950, dur: 0.045, vol: 0.035, type:"sine"});
+        setTicks(secLeft);
+      }
+    }, 1000);
+
+    tickTimer = setTimeout(()=>{
+      if (!running || paused || locked) return;
+      ng += 1; updateScore();
+      buzz();
+      nextQuestion();
+    }, LIMIT_MS);
+
+    if (recognitionOK) setTimeout(()=>{ if (running && !paused && !locked) startRecognition(); }, 120);
+  }
+
+  async function nextQuestion(){
+    stopRecognition();
+    stopTimers();
+    window.speechSynthesis && window.speechSynthesis.cancel();
+
+    if (!running || paused) return;
+
+    if (idx >= pool.length){
+      bubbleGame.textContent = "おわり！";
+      applauseAndCheer();
+      running = false;
+      paused = true;
+      setPlayStopIcon();
+      return;
+    }
+
+    current = pool[idx++];
+    qMath.textContent = `${current.a} × ${current.b}`;
+    qYomi.textContent = current.chant;
+
+    locked = true;
+    await speakAsync(`${current.chant}。`);
+    locked = false;
+    if (!running || paused) return;
+
+    startQuestionTimer();
+  }
+
+  function handleAnswer(n){
+    if (!running || paused || locked) return;
+    locked = true;
+    stopRecognition();
+    stopTimers();
+    window.speechSynthesis && window.speechSynthesis.cancel();
+
+    const correct = current && (n === current.answer);
+    if (correct){
+      ok += 1; updateScore();
+      pingpong();
+      bubbleGame.textContent = "いいね！";
+    }else{
+      ng += 1; updateScore();
+      buzz();
+      bubbleGame.textContent = "おしい！";
+    }
+    setTimeout(()=>{ locked = false; if (running && !paused) nextQuestion(); }, 220);
+  }
+
+  function startGame(){
+    ensureAudio();
+    primeRecognition();
+    ok = 0; ng = 0; updateScore();
+    pool = buildPool();
+    idx = 0;
+    running = true;
+    paused = false;
+    locked = false;
+    setPlayStopIcon();
+    setScreen("game");
+    bubbleGame.textContent = "いくよ！";
+    nextQuestion();
+  }
+
+  function stopGameStay(){
+    running = false;
+    paused = true;
+    locked = false;
+    stopRecognition();
+    stopTimers();
+    window.speechSynthesis && window.speechSynthesis.cancel();
+    setPlayStopIcon();
+    bubbleGame.textContent = "とめたよ";
+  }
+
+  function resumeGame(){
+    ensureAudio();
+    primeRecognition();
+    if (!pool || pool.length===0){ startGame(); return; }
+    running = true;
+    paused = false;
+    locked = false;
+    setPlayStopIcon();
+    bubbleGame.textContent = "さいかい！";
+    if (!current || idx===0) nextQuestion();
+    else {
+      (async ()=>{
+        locked = true;
+        await speakAsync(`${current.chant}。`);
+        locked = false;
+        if (running && !paused) startQuestionTimer();
+      })();
+    }
+  }
+
+  // Mic pill
+  micPill.textContent = recognitionOK ? "🎤 OK" : "🎤 ×";
+
+  // Course buttons
+  courseUpBtn.addEventListener("click", ()=>{
+    ensureAudio();
+    selectedCourse = "up";
+    selectedDans = new Set([1]);
+    starOn = false;
+    buildDanTiles();
+    const t1 = danTiles.querySelector('.tile[data-dan="1"]');
+    if (t1) t1.classList.add("on");
+    setScreen("dan");
+  });
+
+  courseDownBtn.addEventListener("click", ()=>{
+    ensureAudio();
+    selectedCourse = "down";
+    selectedDans = new Set([9]);
+    starOn = false;
+    buildDanTiles();
+    const t9 = danTiles.querySelector('.tile[data-dan="9"]');
+    if (t9) t9.classList.add("on");
+    setScreen("dan");
+  });
+
+  courseRandomBtn.addEventListener("click", ()=>{
+    ensureAudio();
+    selectedCourse = "random";
+    selectedCount = 10;
+    buildCountTiles();
+    setScreen("count");
+  });
+
+  backCourse1.addEventListener("click", ()=>{ ensureAudio(); setScreen("course"); });
+  backCourse2.addEventListener("click", ()=>{ ensureAudio(); setScreen("course"); });
+
+  startFromDan.addEventListener("click", ()=>{
+    ensureAudio();
+    if (!selectedDans || selectedDans.size === 0){
+      selectedDans = new Set([1]);
+      const t1 = danTiles.querySelector('.tile[data-dan="1"]');
+      if (t1) t1.classList.add("on");
+    }
+    startGame();
+  });
+  startFromCount.addEventListener("click", ()=>{ ensureAudio(); startGame(); });
+
+  playStopBtn.addEventListener("click", ()=>{
+    ensureAudio();
+    if (paused) resumeGame();
+    else stopGameStay();
+  });
+
+})();
+</script>
+</body>
+</html>

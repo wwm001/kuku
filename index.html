@@ -3,9 +3,15 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <!-- Fallback redirect -->
-  <meta http-equiv="refresh" content="0; url=index_v13.html?v=13" />
+  <meta http-equiv="refresh" content="0; url=index_v15.html?v=15" />
   <title>クック先生の九九トレーニング</title>
+  <script>
+    (function(){
+      var target = "index_v15.html?v=15"; // <- ここだけを v16, v17... に変える
+      var hash = location.hash || "";
+      location.replace(target + hash);
+    })();
+  </script>
   <style>
     html,body{height:100%;margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,"Noto Sans JP","Hiragino Kaku Gothic ProN","Meiryo",sans-serif;}
     body{display:flex;align-items:center;justify-content:center;background:#0b1220;color:#fff;}
@@ -13,23 +19,12 @@
     a{color:#93c5fd}
     code{background:rgba(0,0,0,.25);padding:2px 6px;border-radius:8px}
   </style>
-  <script>
-    (function(){
-      var target = "index_v13.html?v=13"; // <- v14, v15... はここだけ変更
-      var hash = location.hash || "";
-      if (!location.pathname.endsWith("/" + target.split("?")[0])) {
-        location.replace(target + hash);
-      }
-    })();
-  </script>
 </head>
 <body>
   <div class="box">
     <div style="font-weight:900;font-size:18px;margin-bottom:8px;">起動中…</div>
     <div style="opacity:.85;line-height:1.5">
-      画面が切り替わらない場合は、<br/>
-      <a href="index_v13.html?v=13">index_v13.html</a> を開いてください。<br/>
-      <small style="opacity:.8">（最新版の切替は <code>index.html</code> の <code>index_v13</code> を変更するだけ）</small>
+      画面が切り替わらない場合は、<a href="index_v15.html?v=15">index_v15.html</a> を開いてください。
     </div>
   </div>
 </body>
